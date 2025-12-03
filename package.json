@@ -1,0 +1,45 @@
+{
+  "name": "timnl",
+  "version": "1.0.0",
+  "description": "Generate dashboard images for Kindle e-ink display",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "install-browser": "npx playwright install chromium",
+    "fetch-calendar": "tsx scripts/fetch-calendar.ts",
+    "capture": "tsx scripts/capture.ts",
+    "deploy": "tsx scripts/deploy.ts"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "ical.js": "^2.2.1",
+    "lucide-react": "^0.555.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.10.0",
+    "sharp": "^0.34.5",
+    "tailwind-merge": "^3.4.0",
+    "tsdav": "^2.1.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0-beta.7",
+    "@types/node": "^24.10.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "playwright": "^1.57.0",
+    "tailwindcss": "^4.0.0-beta.7",
+    "tsx": "^4.21.0",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3"
+  },
+  "keywords": [
+    "kindle",
+    "dashboard",
+    "e-ink"
+  ],
+  "author": "",
+  "license": "MIT"
+}
