@@ -8,7 +8,7 @@ import { Agenda, Energy, Week } from './pages';
 const iconMap = {
   Calendar1Icon,
   CalendarDaysIcon,
-  ZapIcon
+  ZapIcon,
 };
 
 // Map component names to actual components

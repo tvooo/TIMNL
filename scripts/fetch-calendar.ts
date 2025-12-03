@@ -1,8 +1,8 @@
-import { createDAVClient } from 'tsdav';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
-import * as path from 'path';
 import ICAL from 'ical.js';
+import * as path from 'path';
+import { createDAVClient } from 'tsdav';
 
 dotenv.config();
 
@@ -94,14 +94,18 @@ async function fetchCalendarEvents() {
     }
 
     const now = new Date();
+    const oneWeekBeforeNow = new Date();
+    oneWeekBeforeNow.setDate(now.getDate() - 7);
     const twoWeeksFromNow = new Date();
     twoWeeksFromNow.setDate(now.getDate() + 14);
 
-    console.log(`Fetching events from ${now.toLocaleDateString()} to ${twoWeeksFromNow.toLocaleDateString()}...`);
+    console.log(
+      `Fetching events from ${oneWeekBeforeNow.toLocaleDateString()} to ${twoWeeksFromNow.toLocaleDateString()}...`
+    );
     const calendarObjects = await client.fetchCalendarObjects({
       calendar: selectedCalendar,
       timeRange: {
-        start: now.toISOString(),
+        start: oneWeekBeforeNow.toISOString(),
         end: twoWeeksFromNow.toISOString(),
       },
     });
@@ -118,7 +122,7 @@ async function fetchCalendarEvents() {
       events: events,
     };
 
-    const outputPath = path.join(process.cwd(), 'src/data/calendar.json');
+    const outputPath = path.join(process.cwd(), 'data/calendar.json');
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
 
@@ -132,7 +136,7 @@ async function fetchCalendarEvents() {
       error: error.message,
     };
 
-    const outputPath = path.join(process.cwd(), 'src/data/calendar.json');
+    const outputPath = path.join(process.cwd(), 'data/calendar.json');
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.writeFileSync(outputPath, JSON.stringify(errorOutput, null, 2));
 

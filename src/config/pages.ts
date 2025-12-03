@@ -15,12 +15,12 @@ export const APP_PAGES: PageConfig[] = [
     component: 'Agenda',
     icon: 'Calendar1Icon',
   },
-  // {
-  //   path: '/week',
-  //   name: 'week',
-  //   component: 'Week',
-  //   icon: 'CalendarDaysIcon',
-  // },
+  {
+    path: '/week',
+    name: 'week',
+    component: 'Week',
+    icon: 'CalendarDaysIcon',
+  },
   {
     path: '/energy',
     name: 'energy',
