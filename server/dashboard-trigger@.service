@@ -1,0 +1,13 @@
+[Unit]
+Description=Kindle dashboard hard-refresh handler (%i)
+
+[Service]
+Type=oneshot
+User=__USER__
+WorkingDirectory=__REPO_DIR__
+Environment=OUTPUT_DIR=__OUTPUT_DIR__
+ExecStart=__REPO_DIR__/server/trigger-handler.sh
+StandardInput=socket
+StandardOutput=socket
+StandardError=journal
+TimeoutStartSec=15min

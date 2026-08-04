@@ -1,0 +1,9 @@
+[Unit]
+Description=Kindle dashboard hard-refresh trigger endpoint
+
+[Socket]
+ListenStream=8091
+Accept=yes
+
+[Install]
+WantedBy=sockets.target

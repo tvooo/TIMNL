@@ -1,0 +1,12 @@
+[Unit]
+Description=Render Kindle dashboard images
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=__USER__
+WorkingDirectory=__REPO_DIR__
+Environment=OUTPUT_DIR=__OUTPUT_DIR__
+ExecStart=__REPO_DIR__/server/render.sh
+TimeoutStartSec=15min
