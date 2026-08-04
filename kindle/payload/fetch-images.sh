@@ -47,8 +47,28 @@ wifi_off() {
         || ifdown wlan0 2>/dev/null
 }
 
+# The Kindle's busybox wget (1.7.2) has no timeout flag; enforce one by
+# running it in the background and killing it if it overruns.
+# Usage: wget_to <timeout-seconds> <output-file> <url>
+wget_to() {
+    _t="$1"; _out="$2"; _url="$3"
+    wget -q -O "$_out" "$_url" 2>/dev/null &
+    _pid=$!
+    _i=0
+    while kill -0 "$_pid" 2>/dev/null; do
+        if [ "$_i" -ge "$_t" ]; then
+            kill "$_pid" 2>/dev/null
+            wait "$_pid" 2>/dev/null
+            return 1
+        fi
+        sleep 1
+        _i=$((_i + 1))
+    done
+    wait "$_pid"
+}
+
 server_ok() {
-    wget -q -T 5 -O /dev/null "$SERVER_URL/images.txt" 2>/dev/null
+    wget_to 5 /dev/null "$SERVER_URL/images.txt"
 }
 
 msg "Updating..."
@@ -73,12 +93,13 @@ fi
 if [ "$MODE" = trigger ] && [ -n "$TRIGGER_URL" ]; then
     log "requesting server re-render"
     msg "Refreshing data..."
-    wget -q -T 300 -O - "$TRIGGER_URL" 2>/dev/null | tail -3
+    wget_to 300 /tmp/dashboard-trigger.out "$TRIGGER_URL" && tail -3 /tmp/dashboard-trigger.out
+    rm -f /tmp/dashboard-trigger.out
 fi
 
 mkdir -p "$IMAGE_DIR"
 MANIFEST=/tmp/dashboard-images.txt
-if ! wget -q -T 10 -O "$MANIFEST" "$SERVER_URL/images.txt"; then
+if ! wget_to 15 "$MANIFEST" "$SERVER_URL/images.txt"; then
     log "ERROR: failed to download manifest"
     msg "Fetch failed"
     [ "$KEEP" = 1 ] || wifi_off
@@ -97,7 +118,7 @@ while read -r name; do
         *.png) ;;
         *) continue ;;
     esac
-    if wget -q -T 30 -O "$IMAGE_DIR/.tmp.$name" "$SERVER_URL/$name"; then
+    if wget_to 60 "$IMAGE_DIR/.tmp.$name" "$SERVER_URL/$name"; then
         mv "$IMAGE_DIR/.tmp.$name" "$IMAGE_DIR/$name"
         FETCHED=$((FETCHED + 1))
     else
