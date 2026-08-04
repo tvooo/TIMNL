@@ -20,12 +20,24 @@ if [ "$RUN_USER" = "root" ]; then
     exit 1
 fi
 
+# Prefer a system-installed chromium over Playwright's bundled build,
+# which is an Ubuntu binary and unreliable on Arch. Empty is fine:
+# capture.ts falls back to the bundled build when CHROMIUM_PATH is unset.
+CHROMIUM_PATH="${CHROMIUM_PATH:-$(command -v chromium || command -v chromium-browser || true)}"
+if [ -n "$CHROMIUM_PATH" ]; then
+    echo "== Using system chromium: $CHROMIUM_PATH =="
+else
+    echo "== No system chromium found; units will use Playwright's bundled browser =="
+    echo "   (install one with: sudo pacman -S chromium, then re-run this script)"
+fi
+
 echo "== Installing systemd units (user=$RUN_USER, repo=$REPO_DIR) =="
 for unit in dashboard-render.service dashboard-render.timer \
             dashboard-trigger.socket dashboard-trigger@.service; do
     sed -e "s|__USER__|$RUN_USER|g" \
         -e "s|__REPO_DIR__|$REPO_DIR|g" \
         -e "s|__OUTPUT_DIR__|$OUTPUT_DIR|g" \
+        -e "s|__CHROMIUM_PATH__|$CHROMIUM_PATH|g" \
         "$SCRIPT_DIR/$unit" > "/etc/systemd/system/$unit"
     echo "installed /etc/systemd/system/$unit"
 done

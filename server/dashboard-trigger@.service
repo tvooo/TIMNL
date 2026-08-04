@@ -6,6 +6,7 @@ Type=oneshot
 User=__USER__
 WorkingDirectory=__REPO_DIR__
 Environment=OUTPUT_DIR=__OUTPUT_DIR__
+Environment=CHROMIUM_PATH=__CHROMIUM_PATH__
 ExecStart=__REPO_DIR__/server/trigger-handler.sh
 StandardInput=socket
 StandardOutput=socket

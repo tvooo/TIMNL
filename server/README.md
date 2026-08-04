@@ -27,10 +27,10 @@ npm install
 #    credentials (CalDAV, Home Assistant, weather). Kindle vars not needed
 #    on the server.
 
-# 3. Use the system chromium (skips Playwright's bundled download and its
-#    library requirements). Add to the .service files or your environment:
-#    CHROMIUM_PATH=/usr/bin/chromium
-#    (alternatively: npm run install-browser to use Playwright's build)
+# 3. Use the system chromium — do NOT run `npx playwright install` on Arch.
+#    Playwright downloads Ubuntu fallback builds (all browsers, slow, and
+#    often broken at launch due to missing libs). The pacman chromium from
+#    step 1 is all that's needed; install.sh detects it automatically.
 
 # 4. Test a render by hand first
 CHROMIUM_PATH=/usr/bin/chromium OUTPUT_DIR=/tmp/dash-test server/render.sh
@@ -51,10 +51,12 @@ curl http://localhost:8090/images.txt
 curl http://localhost:8091/          # triggers a re-render, streams the log
 ```
 
-If you set `CHROMIUM_PATH`, add it as an `Environment=` line to both
-`dashboard-render.service` and `dashboard-trigger@.service` in
-`/etc/systemd/system/`, then `sudo systemctl daemon-reload`. (The render
-script only reads it from its process environment, not from `.env`.)
+`install.sh` detects the system chromium (`command -v chromium`) and bakes
+`CHROMIUM_PATH` into both service units. If you install chromium later or
+want a different browser binary, re-run `sudo server/install.sh` (or pass
+`CHROMIUM_PATH=/path/to/browser sudo -E server/install.sh`). When manually
+testing `render.sh`, set `CHROMIUM_PATH` in the environment yourself — the
+script doesn't read `.env`.
 
 ## Operations
 
