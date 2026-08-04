@@ -5,7 +5,7 @@ import sharp from 'sharp';
 import { APP_PAGES } from '../src/config/pages';
 
 const CONFIG = {
-  serverUrl: 'http://localhost:3000',
+  serverUrl: process.env.CAPTURE_URL || 'http://localhost:3000',
   outputDir: 'screenshots',
   width: 800,
   height: 600,
@@ -26,7 +26,11 @@ async function captureScreenshots() {
   fs.mkdirSync(outputPath, { recursive: true });
 
   console.log('Launching browser...');
-  const browser = await chromium.launch();
+  // CHROMIUM_PATH lets the server use a system-installed chromium
+  // (e.g. pacman's) instead of Playwright's bundled build
+  const browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH || undefined,
+  });
 
   try {
     const context = await browser.newContext({

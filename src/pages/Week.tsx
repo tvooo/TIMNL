@@ -76,7 +76,6 @@ export function Week() {
   const renderDayCell = (day: Date, index: number) => {
     const dayKey = day.toISOString().split('T')[0]
     const events = eventsByDay.get(dayKey) || []
-    const isTodayCell = isToday(day)
 
     return (
       <div key={index} className="p-2">
