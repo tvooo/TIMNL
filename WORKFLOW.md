@@ -7,7 +7,7 @@ needs to be reachable from the server, and keeps WiFi off between fetches.
 ```
 ┌─────────────────── server (ThinkPad, Arch) ────────────────────┐
 │  systemd timer (15 min) → render.sh:                           │
-│    fetch data (CalDAV, HA, Open-Meteo, Reminders)              │
+│    fetch data (CalDAV, HA, Open-Meteo, Reminders, photos/)     │
 │    → vite build → Playwright capture → rotate/grayscale        │
 │    → /srv/kindle-dashboard/*.png + images.txt                  │
 │  Caddy :8090  serves the images                                │
@@ -32,14 +32,40 @@ needs to be reachable from the server, and keeps WiFi off between fetches.
 
 ```bash
 npm install
-npm run fetch-calendar    # + fetch-energy / fetch-weather / fetch-tasks
-npm run dev               # http://localhost:3000, pages: / /week /energy /weather
+npm run fetch-calendar    # + fetch-energy / fetch-weather / fetch-tasks / fetch-photo
+npm run dev               # http://localhost:3000
+                          # pages: / /week /energy /weather /photo
 ```
 
 Pages are React components in `src/pages/`, registered in
 `src/config/pages.ts` — the capture script derives the screenshot list from
 that config, and the server publishes whatever was captured, so adding a
-page there is all that's needed for it to show up in the rotation.
+page there is all that's needed for it to show up in the rotation. Setting
+`fullBleed: true` on a page drops the tab rail and the footer so it gets the
+whole 800x600 frame (the photo page uses this).
+
+## Photos
+
+The photo page shows one image from `photos/` per render, advancing
+round-robin through the directory (sorted by filename, remembering the last
+one shown in `data/photo-state.json`). Adding or removing files doesn't
+disturb the rotation. Drop images in with plain scp:
+
+```bash
+scp ~/holiday/*.jpg server:~/timnl/photos/
+```
+
+`scripts/fetch-photo.ts` prepares the picked image for the panel: EXIF
+orientation applied, fitted to 800x600, greyscaled, contrast-normalised, and
+Floyd-Steinberg dithered down to the 16 grey levels a Kindle 4 can actually
+show — without dithering, gradients band badly. The result is written to
+`public/photo.png` and drawn 1:1 by the page, so the capture step's rotation
+is lossless and the dither reaches the display exactly as computed.
+
+Two env vars (see `.env.example`): `PHOTOS_DIR` (default `photos`, absolute
+paths fine) and `PHOTO_FIT` — `contain` (default, whole photo with white
+borders) or `cover` (fills the frame, crops using sharp's attention
+strategy).
 
 To test the full render pipeline locally:
 

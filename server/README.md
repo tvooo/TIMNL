@@ -25,7 +25,8 @@ npm install
 
 # 2. Config: copy .env.example to .env and fill in the data-source
 #    credentials (CalDAV, Home Assistant, weather). Kindle vars not needed
-#    on the server.
+#    on the server. PHOTOS_DIR points at the photo page's source images.
+mkdir -p photos   # scp images here; one is shown per render, round-robin
 
 # 3. Use the system chromium — do NOT run `npx playwright install` on Arch.
 #    Playwright downloads Ubuntu fallback builds (all browsers, slow, and

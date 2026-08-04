@@ -6,6 +6,8 @@ export interface PageConfig {
   name: string;
   component: string;
   icon: string;
+  /** Render edge to edge, without the tab rail and the footer. */
+  fullBleed?: boolean;
 }
 
 export const APP_PAGES: PageConfig[] = [
@@ -32,5 +34,12 @@ export const APP_PAGES: PageConfig[] = [
     name: 'weather',
     component: 'Weather',
     icon: 'CloudSunIcon',
+  },
+  {
+    path: '/photo',
+    name: 'photo',
+    component: 'Photo',
+    icon: 'ImageIcon',
+    fullBleed: true,
   },
 ];

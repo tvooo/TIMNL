@@ -1,14 +1,15 @@
-import { Calendar1Icon, CalendarDaysIcon, CloudSunIcon, ZapIcon } from 'lucide-react';
+import { Calendar1Icon, CalendarDaysIcon, CloudSunIcon, ImageIcon, ZapIcon } from 'lucide-react';
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { APP_PAGES } from './config/pages';
-import { Agenda, Energy, Weather, Week } from './pages';
+import { Agenda, Energy, Photo, Weather, Week } from './pages';
 
 // Map icon names to actual icon components
 const iconMap = {
   Calendar1Icon,
   CalendarDaysIcon,
   CloudSunIcon,
+  ImageIcon,
   ZapIcon,
 };
 
@@ -18,6 +19,7 @@ const componentMap = {
   Week,
   Energy,
   Weather,
+  Photo,
 };
 
 // Combine config with React components
@@ -49,9 +51,16 @@ function Tabs() {
 }
 
 function AppContent() {
+  const location = useLocation();
+  // Full-bleed pages (the photo) fill the whole 800x600 frame: no tab rail,
+  // no footer, no padding.
+  const fullBleed = pages.some(
+    (page) => page.path === location.pathname && page.fullBleed
+  );
+
   return (
     <div className="w-[800px] h-[600px] bg-white text-black flex flex-col">
-      <main className="flex-1 flex flex-row gap-4 pl-12">
+      <main className={twMerge("flex-1 flex flex-row gap-4 pl-12", fullBleed && "gap-0 pl-0")}>
         <div className="grow">
           <Routes>
             {pages.map((page) => (
@@ -64,14 +73,18 @@ function AppContent() {
           </Routes>
         </div>
 
-        <div className="flex-0">
-          <Tabs />
-        </div>
+        {!fullBleed && (
+          <div className="flex-0">
+            <Tabs />
+          </div>
+        )}
       </main>
 
-      <footer className="mt-auto text-right p-2 text-sm text-gray-600">
-        Last updated: {new Date().toLocaleString('de-DE')}
-      </footer>
+      {!fullBleed && (
+        <footer className="mt-auto text-right p-2 text-sm text-gray-600">
+          Last updated: {new Date().toLocaleString('de-DE')}
+        </footer>
+      )}
     </div>
   );
 }

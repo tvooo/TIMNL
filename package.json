@@ -12,6 +12,7 @@
     "fetch-energy": "tsx scripts/fetch-energy.ts",
     "fetch-weather": "tsx scripts/fetch-weather.ts",
     "fetch-tasks": "tsx scripts/fetch-tasks.ts",
+    "fetch-photo": "tsx scripts/fetch-photo.ts",
     "capture": "tsx scripts/capture.ts",
     "deploy": "tsx scripts/deploy.ts"
   },

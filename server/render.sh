@@ -18,7 +18,7 @@ cd "$REPO_DIR"
 echo "[render] starting at $(date '+%Y-%m-%d %H:%M:%S')"
 
 # Data fetchers fail soft: stale data beats no dashboard
-for source in calendar energy weather tasks; do
+for source in calendar energy weather tasks photo; do
     npm run --silent "fetch-$source" || echo "[render] WARN: fetch-$source failed, using existing data"
 done
 
