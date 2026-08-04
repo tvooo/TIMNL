@@ -10,7 +10,7 @@ echo "Press buttons on the Kindle. Keycodes appear below (Ctrl-C to stop):"
 listen() {
     dev="$1"
     while :; do
-        ev=$(dd bs=16 count=1 2>/dev/null | od -An -tu2)
+        ev=$(dd bs=16 count=1 2>/dev/null | hexdump -e '8/2 "%u " "\n"')
         set -- $ev
         [ $# -ge 7 ] || continue
         [ "$5" = "1" ] || continue   # EV_KEY only

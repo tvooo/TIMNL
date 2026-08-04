@@ -47,12 +47,13 @@ handle_key() {
 
 # Each input_event on 32-bit ARM is 16 bytes:
 #   sec(4) usec(4) type(2) code(2) value(4)
-# od -tu2 gives 8 shorts; field 5 = type, 6 = code, 7 = value low word.
+# The Kindle has no od, but hexdump(1) is present; print 8 decimal
+# shorts: field 5 = type, 6 = code, 7 = value low word.
 # type 1 = EV_KEY, value 1 = key down.
 listen() {
     dev="$1"
     while :; do
-        ev=$(dd bs=16 count=1 2>/dev/null | od -An -tu2)
+        ev=$(dd bs=16 count=1 2>/dev/null | hexdump -e '8/2 "%u " "\n"')
         set -- $ev
         [ $# -ge 7 ] || continue
         [ "$5" = "1" ] || continue
