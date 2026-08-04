@@ -48,10 +48,13 @@ wifi_off() {
 }
 
 # The Kindle's busybox wget (1.7.2) has no timeout flag; enforce one by
-# running it in the background and killing it if it overruns.
+# running it in the background and killing it if it overruns. Its -O also
+# refuses to write to an existing file (even /dev/null), so clear the
+# target first and never pass device nodes.
 # Usage: wget_to <timeout-seconds> <output-file> <url>
 wget_to() {
     _t="$1"; _out="$2"; _url="$3"
+    rm -f "$_out"
     wget -q -O "$_out" "$_url" 2>/dev/null &
     _pid=$!
     _i=0
@@ -68,7 +71,7 @@ wget_to() {
 }
 
 server_ok() {
-    wget_to 5 /dev/null "$SERVER_URL/images.txt"
+    wget_to 5 /tmp/dashboard-probe "$SERVER_URL/images.txt"
 }
 
 msg "Updating..."
