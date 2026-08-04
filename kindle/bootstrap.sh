@@ -34,6 +34,7 @@ KINDLE_PASSWORD="$(env_get KINDLE_PASSWORD)"
 SERVER_URL="$(env_get DASHBOARD_SERVER_URL)"
 TRIGGER_URL="$(env_get DASHBOARD_TRIGGER_URL)"
 FETCH_INTERVAL_MIN="${FETCH_INTERVAL_MIN:-30}"
+TRIGGER_POLL_TIMEOUT="${TRIGGER_POLL_TIMEOUT:-120}"
 
 if [ -z "$KINDLE_HOST" ]; then
     echo "Error: no Kindle IP. Pass it as an argument or set KINDLE_HOST in .env" >&2
@@ -83,6 +84,9 @@ IMAGE_DIR=/mnt/us/dashboard/images
 LOG_FILE=/mnt/us/dashboard/dashboard.log
 KEEP_WIFI=0
 FETCH_INTERVAL_MIN=$FETCH_INTERVAL_MIN
+# How long a hard refresh waits for the server render to publish (seconds);
+# a render takes ~27s, so this is mostly WiFi-hiccup headroom.
+TRIGGER_POLL_TIMEOUT=$TRIGGER_POLL_TIMEOUT
 
 # Button keycodes (space-separated lists), verified on the device. The
 # dashboard hangs rotated 90° CCW. Page-turn codes group by SIDE, not by

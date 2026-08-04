@@ -63,4 +63,10 @@ fi
 ls "$OUTPUT_DIR" | grep '^dashboard-.*\.png$' | sort > "$OUTPUT_DIR/.stage-images.txt"
 mv "$OUTPUT_DIR/.stage-images.txt" "$OUTPUT_DIR/images.txt"
 
+# Render stamp: the manifest content never changes (same filenames every
+# render), so the Kindle polls this to detect that a triggered render
+# has published.
+date '+%s' > "$OUTPUT_DIR/.stage-stamp.txt"
+mv "$OUTPUT_DIR/.stage-stamp.txt" "$OUTPUT_DIR/stamp.txt"
+
 echo "[render] done: $published images published at $(date '+%Y-%m-%d %H:%M:%S')"

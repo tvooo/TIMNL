@@ -96,8 +96,34 @@ fi
 if [ "$MODE" = trigger ] && [ -n "$TRIGGER_URL" ]; then
     log "requesting server re-render"
     msg "Refreshing data..."
-    wget_to 300 /tmp/dashboard-trigger.out "$TRIGGER_URL" && tail -3 /tmp/dashboard-trigger.out
-    rm -f /tmp/dashboard-trigger.out
+    # The server answers the trigger immediately and renders detached;
+    # poll stamp.txt (rewritten on every publish) until it changes, so a
+    # WiFi blip during the render only delays a poll instead of killing
+    # everything. Bounded by TRIGGER_POLL_TIMEOUT.
+    OLD_STAMP=""
+    wget_to 10 /tmp/dashboard-stamp "$SERVER_URL/stamp.txt" \
+        && OLD_STAMP=$(cat /tmp/dashboard-stamp)
+    if wget_to 30 /tmp/dashboard-trigger.out "$TRIGGER_URL"; then
+        tail -1 /tmp/dashboard-trigger.out
+        waited=0
+        while [ "$waited" -lt "${TRIGGER_POLL_TIMEOUT:-120}" ]; do
+            sleep 5
+            waited=$((waited + 5))
+            if wget_to 10 /tmp/dashboard-stamp "$SERVER_URL/stamp.txt"; then
+                NEW_STAMP=$(cat /tmp/dashboard-stamp)
+                if [ -n "$NEW_STAMP" ] && [ "$NEW_STAMP" != "$OLD_STAMP" ]; then
+                    log "render published after ${waited}s"
+                    break
+                fi
+            fi
+        done
+        if [ "$waited" -ge "${TRIGGER_POLL_TIMEOUT:-120}" ]; then
+            log "WARN: no new render after ${waited}s, fetching current images"
+        fi
+    else
+        log "WARN: trigger request failed, fetching current images"
+    fi
+    rm -f /tmp/dashboard-trigger.out /tmp/dashboard-stamp
 fi
 
 mkdir -p "$IMAGE_DIR"

@@ -7,12 +7,14 @@ server never needs to reach the Kindle.
 ## Components
 
 - `render.sh` — fetch data (fail-soft) → `vite build` → `vite preview` →
-  Playwright capture → publish PNGs + `images.txt` manifest to
-  `/srv/kindle-dashboard`
+  Playwright capture → publish PNGs + `images.txt` manifest + `stamp.txt`
+  (render timestamp, rewritten every publish) to `/srv/kindle-dashboard`
 - `dashboard-render.timer` / `.service` — runs `render.sh` every 15 min
 - `dashboard-trigger.socket` / `dashboard-trigger@.service` — port 8091;
   a plain HTTP GET triggers an immediate re-render (used by the Kindle's
-  center button) and streams the render log back
+  center button). Responds right away and renders detached — the render
+  log goes to the journal, and the Kindle polls `stamp.txt` to see the
+  render publish, so a dropped connection can't kill the render
 - Caddy serves `/srv/kindle-dashboard` on port 8090
 
 ## Install
@@ -49,7 +51,8 @@ sudo systemctl reload caddy
 
 # 7. Verify
 curl http://localhost:8090/images.txt
-curl http://localhost:8091/          # triggers a re-render, streams the log
+curl http://localhost:8091/          # triggers a re-render (returns immediately)
+journalctl -u 'dashboard-trigger@*' -f   # watch the detached render log
 ```
 
 `install.sh` detects the system chromium (`command -v chromium`) and bakes
