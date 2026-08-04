@@ -156,13 +156,37 @@ async function deploy() {
   let serverWasStarted = false;
 
   try {
-    // Step 1: Fetch calendar data
-    const fetchSuccess = await runCommand(
+    // Step 1: Fetch calendar, energy, weather, and task data
+    const calendarSuccess = await runCommand(
       'tsx scripts/fetch-calendar.ts',
-      'Step 1/7: Fetching calendar data'
+      'Step 1a/7: Fetching calendar data'
     );
-    if (!fetchSuccess) {
+    if (!calendarSuccess) {
       console.log('⚠ Calendar fetch failed, continuing with existing data...');
+    }
+
+    const energySuccess = await runCommand(
+      'tsx scripts/fetch-energy.ts',
+      'Step 1b/7: Fetching energy data'
+    );
+    if (!energySuccess) {
+      console.log('⚠ Energy fetch failed, continuing with existing data...');
+    }
+
+    const weatherSuccess = await runCommand(
+      'tsx scripts/fetch-weather.ts',
+      'Step 1c/7: Fetching weather data'
+    );
+    if (!weatherSuccess) {
+      console.log('⚠ Weather fetch failed, continuing with existing data...');
+    }
+
+    const tasksSuccess = await runCommand(
+      'tsx scripts/fetch-tasks.ts',
+      'Step 1d/7: Fetching task data'
+    );
+    if (!tasksSuccess) {
+      console.log('⚠ Tasks fetch failed, continuing with existing data...');
     }
 
     // Step 2: Start dev server (if not already running)
