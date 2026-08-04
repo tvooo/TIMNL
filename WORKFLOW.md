@@ -1,146 +1,55 @@
-# Kindle Dashboard Workflow
+# Architecture
 
-Complete workflow for generating and deploying dashboard images to your Kindle.
+A kitchen dashboard on a jailbroken Kindle 4. The server renders web pages
+to e-ink-ready PNGs; the Kindle pulls and displays them. The Kindle never
+needs to be reachable from the server, and keeps WiFi off between fetches.
 
-## Prerequisites
-
-1. Install dependencies: `npm install`
-2. Install Playwright browser: `npm run install-browser`
-3. Configure CalDAV credentials in `.env`:
-   ```env
-   CALDAV_URL=https://your-caldav-server.com/calendar
-   CALDAV_USERNAME=your-username
-   CALDAV_PASSWORD=your-password
-   CALDAV_CALENDAR_NAME=Familie
-   ```
-
-## Step-by-Step Workflow
-
-### 1. Fetch Calendar Data
-```bash
-npm run fetch-calendar
+```
+┌─────────────────── server (ThinkPad, Arch) ────────────────────┐
+│  systemd timer (15 min) → render.sh:                           │
+│    fetch data (CalDAV, HA, Open-Meteo, Reminders)              │
+│    → vite build → Playwright capture → rotate/grayscale        │
+│    → /srv/kindle-dashboard/*.png + images.txt                  │
+│  Caddy :8090  serves the images                                │
+│  systemd socket :8091  GET = re-render now (hard refresh)      │
+└────────────────────────────────────────────────────────────────┘
+                 ▲ HTTP pull (WiFi cycled on/off)
+┌─────────────────── Kindle (/mnt/us/dashboard) ─────────────────┐
+│  cron (30 min): fetch-images.sh → wget PNGs → eips → WiFi off  │
+│  buttons.sh daemon: ◀/▶ prev/next · center = hard refresh      │
+│                     Home = redraw                              │
+│  boot hook: dashboard mode persists across reboots             │
+└────────────────────────────────────────────────────────────────┘
 ```
 
-This fetches the next 14 days of events from your CalDAV server and saves to `src/data/calendar.json`.
+## Setup
 
-### 2. Start Dev Server
-```bash
-npm run dev
-```
+1. Server: [`server/README.md`](server/README.md)
+2. Kindle: [`kindle/README.md`](kindle/README.md) — one command:
+   `kindle/bootstrap.sh <kindle-ip>`
 
-Opens at http://localhost:3000. The dashboard shows:
-- Current time and date
-- Upcoming calendar events
-
-Leave this running for the next step.
-
-### 3. Capture Screenshot
-In a **separate terminal**:
-```bash
-npm run capture
-```
-
-This:
-- Uses Playwright to load the dashboard at 800x600 resolution
-- Waits 2 seconds for content to render
-- Captures screenshot to `screenshots/dashboard-[timestamp].png`
-- Also saves as `screenshots/latest.png`
-
-### 4. Deploy to Kindle
-
-**Option A: Manual SCP**
-```bash
-scp screenshots/latest.png root@your-kindle-ip:/mnt/us/dashboards/
-```
-
-**Option B: Copy all screenshots**
-```bash
-scp screenshots/*.png root@your-kindle-ip:/mnt/us/dashboards/
-```
-
-**Option C: Use the deployment script** (if created)
-```bash
-npm run deploy
-```
-
-### 5. View on Kindle
-
-The Kindle's cron job will automatically rotate through images in `/mnt/us/dashboards/`.
-
-Or manually trigger the rotation script:
-```bash
-ssh root@your-kindle-ip "/mnt/us/rotate-display.sh"
-```
-
-## Automated Workflow
-
-You can automate the entire process with a single command:
+## Local development
 
 ```bash
-npm run fetch-calendar && npm run dev & sleep 5 && npm run capture
+npm install
+npm run fetch-calendar    # + fetch-energy / fetch-weather / fetch-tasks
+npm run dev               # http://localhost:3000, pages: / /week /energy /weather
 ```
 
-Or create a combined script:
+Pages are React components in `src/pages/`, registered in
+`src/config/pages.ts` — the capture script derives the screenshot list from
+that config, and the server publishes whatever was captured, so adding a
+page there is all that's needed for it to show up in the rotation.
+
+To test the full render pipeline locally:
+
 ```bash
-./scripts/generate-all.sh
+OUTPUT_DIR=/tmp/dash-test server/render.sh && open /tmp/dash-test
 ```
 
-## Directory Structure
+## Legacy
 
-```
-/Users/tim/Developer/timnl/
-├── screenshots/              # Generated screenshots (gitignored)
-│   ├── dashboard-[timestamp].png
-│   └── latest.png
-├── src/data/
-│   └── calendar.json        # Fetched calendar data (gitignored)
-├── scripts/
-│   ├── fetch-calendar.js    # CalDAV fetch script
-│   └── capture.js           # Playwright screenshot script
-└── kindle/
-    ├── rotate-display.sh    # Kindle rotation script
-    └── README.md            # Kindle setup instructions
-```
-
-## Tips
-
-**Update frequency:**
-- Fetch calendar: Once daily or when events change
-- Capture: After each calendar fetch or UI changes
-- Deploy: After capturing new screenshots
-
-**Image optimization:**
-Use `kindle_image_converter.py` to optimize for e-ink:
-```bash
-python kindle_image_converter.py screenshots/latest.png dashboard-optimized.png
-```
-
-**Multiple views:**
-You can modify the capture script to take screenshots of different routes or widget combinations.
-
-**Cron automation:**
-Set up a cron job on your computer to auto-fetch and deploy:
-```cron
-# Every hour: fetch calendar, capture, deploy
-0 * * * * cd /Users/tim/Developer/timnl && npm run fetch-calendar && npm run capture && npm run deploy
-```
-
-## Troubleshooting
-
-**"Dev server is not running"**
-- Start the dev server first: `npm run dev`
-- Check it's accessible at http://localhost:3000
-
-**Screenshot is blank**
-- Increase `waitTime` in `scripts/capture.js` (default: 2000ms)
-- Check for errors in browser console
-
-**Calendar shows no events**
-- Verify `.env` credentials are correct
-- Check `CALDAV_CALENDAR_NAME` matches your calendar
-- Run `npm run fetch-calendar` manually to see errors
-
-**Kindle not displaying images**
-- Verify images are in `/mnt/us/dashboards/`
-- Check cron job is running: `ssh root@kindle "crontab -l"`
-- Run rotation script manually: `ssh root@kindle "/mnt/us/rotate-display.sh"`
+`DEPLOY.md` / `npm run deploy` describe the old push-over-SSH flow (server
+scp's images to the Kindle). It still works when the Kindle has WiFi on —
+occasionally handy during development — but the pull model above is what
+runs in production.

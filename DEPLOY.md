@@ -1,4 +1,10 @@
-# One-Command Deployment
+# One-Command Deployment (legacy push flow)
+
+> **Note:** This push-over-SSH flow has been superseded by the pull-based
+> setup described in [WORKFLOW.md](WORKFLOW.md) (server renders + serves,
+> Kindle pulls). It only works while the Kindle has WiFi enabled, which in
+> the current setup is rarely the case. Kept for ad-hoc use during
+> development.
 
 The `deploy` script automates the entire workflow from fetching calendar data to displaying on your Kindle.
 
