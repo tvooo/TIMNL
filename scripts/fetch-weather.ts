@@ -90,14 +90,19 @@ async function fetchWeather() {
 
     const data: OpenMeteoResponse = await response.json();
 
-    // Get next 12 hours of hourly data
-    const now = new Date();
-    const hourlyData = data.hourly.time.slice(0, 12).map((time, index) => ({
-      time,
-      temperature: data.hourly.temperature_2m[index],
-      precipitation: data.hourly.precipitation[index],
-      weatherCode: data.hourly.weathercode[index],
-    }));
+    // Get the next 12 hours starting at the current hour. Hourly times and
+    // current_weather.time share the API's timezone, so string comparison
+    // on the "YYYY-MM-DDTHH" prefix is safe.
+    const currentHour = data.current_weather.time.slice(0, 13);
+    const hourlyData = data.hourly.time
+      .map((time, index) => ({
+        time,
+        temperature: data.hourly.temperature_2m[index],
+        precipitation: data.hourly.precipitation[index],
+        weatherCode: data.hourly.weathercode[index],
+      }))
+      .filter((hour) => hour.time.slice(0, 13) >= currentHour)
+      .slice(0, 12);
 
     // Get next 7 days of daily data
     const dailyData = data.daily.time.map((date, index) => ({

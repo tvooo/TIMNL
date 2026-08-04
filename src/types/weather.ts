@@ -34,30 +34,32 @@ export interface WeatherData {
   error?: string;
 }
 
-// WMO Weather interpretation codes
-export const WEATHER_CODES: Record<number, { description: string; icon: string }> = {
-  0: { description: 'Clear sky', icon: '☀️' },
-  1: { description: 'Mainly clear', icon: '🌤️' },
-  2: { description: 'Partly cloudy', icon: '⛅' },
-  3: { description: 'Overcast', icon: '☁️' },
-  45: { description: 'Foggy', icon: '🌫️' },
-  48: { description: 'Depositing rime fog', icon: '🌫️' },
-  51: { description: 'Light drizzle', icon: '🌦️' },
-  53: { description: 'Moderate drizzle', icon: '🌦️' },
-  55: { description: 'Dense drizzle', icon: '🌧️' },
-  61: { description: 'Slight rain', icon: '🌧️' },
-  63: { description: 'Moderate rain', icon: '🌧️' },
-  65: { description: 'Heavy rain', icon: '🌧️' },
-  71: { description: 'Slight snow', icon: '🌨️' },
-  73: { description: 'Moderate snow', icon: '🌨️' },
-  75: { description: 'Heavy snow', icon: '❄️' },
-  77: { description: 'Snow grains', icon: '❄️' },
-  80: { description: 'Slight rain showers', icon: '🌦️' },
-  81: { description: 'Moderate rain showers', icon: '🌧️' },
-  82: { description: 'Violent rain showers', icon: '⛈️' },
-  85: { description: 'Slight snow showers', icon: '🌨️' },
-  86: { description: 'Heavy snow showers', icon: '❄️' },
-  95: { description: 'Thunderstorm', icon: '⛈️' },
-  96: { description: 'Thunderstorm with slight hail', icon: '⛈️' },
-  99: { description: 'Thunderstorm with heavy hail', icon: '⛈️' },
+// WMO Weather interpretation codes. Icons live in the Weather page as
+// lucide components — emoji glyphs don't render in the headless browser
+// on the render server.
+export const WEATHER_CODES: Record<number, { description: string }> = {
+  0: { description: 'Clear sky' },
+  1: { description: 'Mainly clear' },
+  2: { description: 'Partly cloudy' },
+  3: { description: 'Overcast' },
+  45: { description: 'Foggy' },
+  48: { description: 'Depositing rime fog' },
+  51: { description: 'Light drizzle' },
+  53: { description: 'Moderate drizzle' },
+  55: { description: 'Dense drizzle' },
+  61: { description: 'Slight rain' },
+  63: { description: 'Moderate rain' },
+  65: { description: 'Heavy rain' },
+  71: { description: 'Slight snow' },
+  73: { description: 'Moderate snow' },
+  75: { description: 'Heavy snow' },
+  77: { description: 'Snow grains' },
+  80: { description: 'Slight rain showers' },
+  81: { description: 'Moderate rain showers' },
+  82: { description: 'Violent rain showers' },
+  85: { description: 'Slight snow showers' },
+  86: { description: 'Heavy snow showers' },
+  95: { description: 'Thunderstorm' },
+  96: { description: 'Thunderstorm with slight hail' },
+  99: { description: 'Thunderstorm with heavy hail' },
 };
