@@ -73,6 +73,10 @@ cat > "$TMP_CONFIG" <<EOF
 # mntroot live in /usr/sbin - extend PATH for every script sourcing this.
 export PATH="/usr/sbin:/sbin:\$PATH"
 
+# The device's system timezone is a nonsense GMT-09:58; give our scripts
+# Netherlands local time for log timestamps (POSIX TZ with DST rules).
+export TZ="CET-1CEST,M3.5.0,M10.5.0/3"
+
 SERVER_URL="$SERVER_URL"
 TRIGGER_URL="$TRIGGER_URL"
 IMAGE_DIR=/mnt/us/dashboard/images
