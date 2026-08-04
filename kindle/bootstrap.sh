@@ -80,13 +80,13 @@ LOG_FILE=/mnt/us/dashboard/dashboard.log
 KEEP_WIFI=0
 FETCH_INTERVAL_MIN=$FETCH_INTERVAL_MIN
 
-# Button keycodes (space-separated lists), verified against the Kindle 4
-# keypad bitmap. The device hangs rotated 90° CCW, so book-"previous"
-# buttons advance the dashboard and book-"next" buttons go back. Each
-# side's page buttons emit different codes (left next=109, right prev=104,
-# the other two are 191/193). Run identify-keys.sh to recalibrate.
-NEXT_CODES="105 104 193"    # 5-way left, right-side page-back, left-side page-back
-PREV_CODES="106 109 191"    # 5-way right, left-side page-fwd, right-side page-fwd
+# Button keycodes (space-separated lists), verified on the device. The
+# dashboard hangs rotated 90° CCW. Page-turn codes group by SIDE, not by
+# function: left side emits 109/191, right side 104/193 - so each whole
+# side acts as one direction (deliberate; feels right on the wall).
+# Run identify-keys.sh to recalibrate.
+NEXT_CODES="105 104 193"    # 5-way left, right-side page buttons
+PREV_CODES="106 109 191"    # 5-way right, left-side page buttons
 REFRESH_CODES="194 28 96"   # 5-way center / select
 REDRAW_CODES="102"          # Home button
 EOF
