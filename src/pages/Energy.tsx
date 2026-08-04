@@ -3,6 +3,17 @@ import type { EnergyData } from '../types/energy';
 
 const data: EnergyData = energyData;
 
+// Home Assistant hands back raw sensor floats (gas arrives as
+// "0.046997070313"). Show a precision that's readable at a glance instead.
+function formatState(state: string): string {
+  const value = Number(state);
+  if (state.trim() === '' || !Number.isFinite(value)) return state;
+
+  const magnitude = Math.abs(value);
+  const decimals = magnitude >= 100 ? 0 : magnitude >= 10 ? 1 : 2;
+  return value.toFixed(decimals);
+}
+
 export function Energy() {
   if (data.error) {
     return (
@@ -38,7 +49,7 @@ export function Energy() {
               {sensor.friendlyName}
             </h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-bold">{sensor.state}</span>
+              <span className="text-5xl font-bold">{formatState(sensor.state)}</span>
               <span className="text-2xl text-gray-600">{sensor.unit}</span>
             </div>
             <div className="text-xs text-gray-400 mt-2">
