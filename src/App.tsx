@@ -1,13 +1,14 @@
-import { Calendar1Icon, CalendarDaysIcon, ZapIcon } from 'lucide-react';
+import { Calendar1Icon, CalendarDaysIcon, CloudSunIcon, ZapIcon } from 'lucide-react';
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { APP_PAGES } from './config/pages';
-import { Agenda, Energy, Week } from './pages';
+import { Agenda, Energy, Weather, Week } from './pages';
 
 // Map icon names to actual icon components
 const iconMap = {
   Calendar1Icon,
   CalendarDaysIcon,
+  CloudSunIcon,
   ZapIcon,
 };
 
@@ -15,7 +16,8 @@ const iconMap = {
 const componentMap = {
   Agenda,
   Week,
-  Energy
+  Energy,
+  Weather,
 };
 
 // Combine config with React components

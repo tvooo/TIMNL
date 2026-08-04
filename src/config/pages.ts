@@ -27,4 +27,10 @@ export const APP_PAGES: PageConfig[] = [
     component: 'Energy',
     icon: 'ZapIcon',
   },
+  {
+    path: '/weather',
+    name: 'weather',
+    component: 'Weather',
+    icon: 'CloudSunIcon',
+  },
 ];

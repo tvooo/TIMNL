@@ -10,6 +10,7 @@
     "install-browser": "npx playwright install chromium",
     "fetch-calendar": "tsx scripts/fetch-calendar.ts",
     "fetch-energy": "tsx scripts/fetch-energy.ts",
+    "fetch-weather": "tsx scripts/fetch-weather.ts",
     "capture": "tsx scripts/capture.ts",
     "deploy": "tsx scripts/deploy.ts"
   },
