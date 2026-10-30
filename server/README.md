@@ -16,11 +16,16 @@ server never needs to reach the Kindle.
   log goes to the journal, and the Kindle polls `stamp.txt` to see the
   render publish, so a dropped connection can't kill the render
 - Caddy serves `/srv/kindle-dashboard` on port 8090
+- `trmnl.ts` / `dashboard-trmnl.service` — TRMNL device API (`/api/setup`,
+  `/api/display`, `/api/log`) on port 8092, run with Bun. Serves
+  `/srv/kindle-dashboard/trmnl/*.png` (800x480, 2-bit greyscale), advancing
+  one page per device wake. Refresh interval: `TRMNL_REFRESH_RATE` in the
+  unit (seconds, default 900)
 
 ## Install
 
 ```bash
-# 1. Dependencies
+# 1. Dependencies (bun only for the TRMNL server: https://bun.sh)
 sudo pacman -S --needed nodejs npm chromium
 git clone <this repo> && cd timnl
 npm install
@@ -52,6 +57,7 @@ sudo systemctl reload caddy
 # 7. Verify
 curl http://localhost:8090/images.txt
 curl http://localhost:8091/          # triggers a re-render (returns immediately)
+curl -H 'ID: test' http://localhost:8092/api/display   # TRMNL screen JSON
 journalctl -u 'dashboard-trigger@*' -f   # watch the detached render log
 ```
 
@@ -68,6 +74,7 @@ script doesn't read `.env`.
 systemctl list-timers dashboard-render.timer   # next run
 journalctl -u dashboard-render.service -f      # render logs
 journalctl -u 'dashboard-trigger@*' -f         # trigger requests
+journalctl -u dashboard-trmnl.service -f       # TRMNL requests, battery, logs
 sudo systemctl start dashboard-render.service  # render now
 ```
 

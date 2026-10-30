@@ -15,7 +15,7 @@ const CONFIG = {
   kindleScript: process.env.KINDLE_SCRIPT || '/mnt/us/rotate-display.sh',
   serverUrl: 'http://localhost:3000',
   serverPort: 3000,
-  screenshotsDir: 'screenshots',
+  screenshotsDir: 'screenshots/kindle',
   serverStartTimeout: 30000,
   captureDelay: 3000,
 };

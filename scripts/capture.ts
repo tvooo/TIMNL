@@ -1,14 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { chromium } from 'playwright';
+import { chromium, type Page } from 'playwright';
 import sharp from 'sharp';
+import { DISPLAYS, type DisplayConfig, type DisplayName } from '../src/config/displays';
 import { APP_PAGES } from '../src/config/pages';
+import { encodeGrayPng } from './gray-png';
 
 const CONFIG = {
   serverUrl: process.env.CAPTURE_URL || 'http://localhost:3000',
   outputDir: 'screenshots',
-  width: 800,
-  height: 600,
   waitTime: 2000,
 };
 
@@ -19,12 +19,53 @@ const PAGES = APP_PAGES.map((page, index) => ({
   name: page.name,
 }));
 
-async function captureScreenshots() {
-  const outputPath = path.join(process.cwd(), CONFIG.outputDir);
+// Rotate for the panel's mounting, convert to greyscale, and write either an
+// 8-bit PNG or a packed low-depth one for panels that need it
+async function processScreenshot(screenshot: Buffer, display: DisplayConfig, target: string) {
+  const image = sharp(screenshot).rotate(display.rotate).grayscale();
 
-  // Create output directory
+  if (display.bitDepth) {
+    const { data, info } = await image.raw().toBuffer({ resolveWithObject: true });
+    fs.writeFileSync(target, encodeGrayPng(data, info.width, info.height, display.bitDepth));
+    return;
+  }
+
+  await image
+    .toColorspace('b-w') // ensures it's truly grayscale colorspace
+    .png({
+      compressionLevel: 9,
+      palette: false, // prevents palette-based PNG
+    })
+    .toFile(target);
+}
+
+async function captureDisplay(page: Page, name: DisplayName) {
+  const display = DISPLAYS[name];
+  const outputPath = path.join(process.cwd(), CONFIG.outputDir, name);
   fs.mkdirSync(outputPath, { recursive: true });
 
+  await page.setViewportSize({ width: display.width, height: display.height });
+
+  for (const pageConfig of PAGES) {
+    const url = `${CONFIG.serverUrl}${pageConfig.url}?display=${name}`;
+    console.log(`\n[${name}/${pageConfig.name}] Navigating to ${url}...`);
+
+    await page.goto(url, {
+      waitUntil: 'networkidle',
+      timeout: 10000,
+    });
+
+    console.log(`Waiting ${CONFIG.waitTime}ms for content to render...`);
+    await page.waitForTimeout(CONFIG.waitTime);
+
+    const target = path.join(outputPath, pageConfig.filename);
+    await processScreenshot(await page.screenshot({ fullPage: false }), display, target);
+
+    console.log(`[${name}/${pageConfig.name}] Screenshot saved: ${target}`);
+  }
+}
+
+async function captureScreenshots() {
   console.log('Launching browser...');
   // CHROMIUM_PATH lets the server use a system-installed chromium
   // (e.g. pacman's) instead of Playwright's bundled build
@@ -33,59 +74,14 @@ async function captureScreenshots() {
   });
 
   try {
-    const context = await browser.newContext({
-      viewport: {
-        width: CONFIG.width,
-        height: CONFIG.height,
-      },
-      deviceScaleFactor: 1,
-    });
-
+    const context = await browser.newContext({ deviceScaleFactor: 1 });
     const page = await context.newPage();
 
-    // Capture each page
-    for (const pageConfig of PAGES) {
-      const url = `${CONFIG.serverUrl}${pageConfig.url}`;
-      console.log(`\n[${pageConfig.name}] Navigating to ${url}...`);
-
-      await page.goto(url, {
-        waitUntil: 'networkidle',
-        timeout: 10000,
-      });
-
-      console.log(`Waiting ${CONFIG.waitTime}ms for content to render...`);
-      await page.waitForTimeout(CONFIG.waitTime);
-
-      // Capture to temporary file first
-      const tempFilepath = path.join(outputPath, `temp-${pageConfig.filename}`);
-      const finalFilepath = path.join(outputPath, pageConfig.filename);
-
-      console.log(`Capturing screenshot: ${pageConfig.filename}`);
-
-      await page.screenshot({
-        path: tempFilepath,
-        fullPage: false,
-      });
-
-      // Rotate 90 degrees clockwise and convert to 8-bit grayscale for Kindle
-      console.log(`[${pageConfig.name}] Processing image for Kindle (rotate + 8-bit grayscale)...`);
-      await sharp(tempFilepath)
-        .rotate(90)
-        .grayscale() // or .greyscale() - converts to single channel grayscale
-        .toColorspace("b-w") // ensures it's truly grayscale colorspace
-        .png({
-          compressionLevel: 9,
-          palette: false, // prevents palette-based PNG
-        })
-        .toFile(finalFilepath);
-
-      // Delete temporary file
-      fs.unlinkSync(tempFilepath);
-
-      console.log(`[${pageConfig.name}] Screenshot saved: ${finalFilepath} (600x800, 8-bit grayscale)`);
+    for (const name of Object.keys(DISPLAYS) as DisplayName[]) {
+      await captureDisplay(page, name);
     }
 
-    console.log(`\nTotal screenshots captured: ${PAGES.length}`);
+    console.log(`\nTotal screenshots captured: ${PAGES.length} per display`);
 
   } catch (error) {
     console.error('Error capturing screenshot:', error.message);

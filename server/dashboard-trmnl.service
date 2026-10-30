@@ -1,0 +1,16 @@
+[Unit]
+Description=TRMNL device API for the dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=__USER__
+WorkingDirectory=__REPO_DIR__
+Environment=OUTPUT_DIR=__OUTPUT_DIR__
+Environment=TRMNL_PORT=8092
+Environment=TRMNL_REFRESH_RATE=900
+ExecStart=__BUN_PATH__ server/trmnl.ts
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
