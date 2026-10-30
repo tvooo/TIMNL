@@ -10,9 +10,3 @@ body {
   background: white;
   color: black;
 }
-
-#root {
-  width: 800px;
-  height: 600px;
-  overflow: hidden;
-}

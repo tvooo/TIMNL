@@ -2,33 +2,28 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import sharp from 'sharp';
+import { DISPLAYS, type DisplayConfig, type DisplayName } from '../src/config/displays';
 
 dotenv.config();
 
-// The page is laid out landscape 800x600 and capture.ts rotates the whole
-// screenshot 90 degrees CW to compensate for the Kindle being mounted rotated
-// CCW. So the photo is prepared landscape here and lands upright on the wall.
-const WIDTH = 800;
-const HEIGHT = 600;
-
-// The Kindle 4 panel renders 16 grey levels. Quantising here with
-// Floyd-Steinberg gives smooth gradients instead of the hard banding the
-// display driver produces on its own.
-const GRAY_LEVELS = 16;
+// One image per display, at its frame size and grey depth. The Kindle page
+// is laid out landscape and capture.ts rotates the whole screenshot, so the
+// photo is prepared landscape here and lands upright on the wall.
+// Quantising here with Floyd-Steinberg gives smooth gradients instead of the
+// hard banding the display drivers produce on their own.
 
 const SOURCE_EXTENSIONS = [
   '.jpg', '.jpeg', '.png', '.webp', '.avif', '.tif', '.tiff', '.gif',
 ];
 
 const photosDir = path.resolve(process.cwd(), process.env.PHOTOS_DIR || 'photos');
-const imagePath = path.join(process.cwd(), 'public/photo.png');
 const metaPath = path.join(process.cwd(), 'data/photo.json');
 const statePath = path.join(process.cwd(), 'data/photo-state.json');
 const fit: 'contain' | 'cover' = process.env.PHOTO_FIT === 'cover' ? 'cover' : 'contain';
 
 interface PhotoData {
   fetchedAt: string;
-  image: string;
+  images: Partial<Record<DisplayName, string>>;
   file: string;
   index: number;
   count: number;
@@ -43,7 +38,7 @@ function writeMeta(meta: PhotoData) {
 function emptyMeta(error?: string): PhotoData {
   return {
     fetchedAt: new Date().toISOString(),
-    image: '',
+    images: {},
     file: '',
     index: 0,
     count: 0,
@@ -124,11 +119,34 @@ async function fetchPhoto() {
   const source = path.join(photosDir, file);
   console.log(`Photo ${index + 1}/${photos.length}: ${file}`);
 
+  const images: PhotoData['images'] = {};
+  for (const name of Object.keys(DISPLAYS) as DisplayName[]) {
+    images[name] = `/photo-${name}.png`;
+    await preparePhoto(source, path.join(process.cwd(), 'public', images[name]), DISPLAYS[name]);
+  }
+
+  writeMeta({
+    fetchedAt: new Date().toISOString(),
+    images,
+    file,
+    index,
+    count: photos.length,
+  });
+
+  fs.mkdirSync(path.dirname(statePath), { recursive: true });
+  fs.writeFileSync(statePath, JSON.stringify({ last: file }, null, 2));
+}
+
+async function preparePhoto(
+  source: string,
+  target: string,
+  { width, height, grayLevels }: DisplayConfig,
+) {
   // rotate() with no argument applies the EXIF orientation; normalise()
-  // stretches the tonal range, which matters on a panel with 16 greys.
+  // stretches the tonal range, which matters on a panel with few greys.
   const { data, info } = await sharp(source, { failOn: 'none' })
     .rotate()
-    .resize(WIDTH, HEIGHT, {
+    .resize(width, height, {
       fit,
       position: fit === 'cover' ? sharp.strategy.attention : 'centre',
       background: { r: 255, g: 255, b: 255 },
@@ -140,26 +158,15 @@ async function fetchPhoto() {
     .raw()
     .toBuffer({ resolveWithObject: true });
 
-  const dithered = dither(data, info.width, info.height, GRAY_LEVELS);
+  const dithered = dither(data, info.width, info.height, grayLevels);
 
-  fs.mkdirSync(path.dirname(imagePath), { recursive: true });
+  fs.mkdirSync(path.dirname(target), { recursive: true });
   await sharp(dithered, { raw: { width: info.width, height: info.height, channels: 1 } })
     .toColorspace('b-w')
     .png({ compressionLevel: 9, palette: false })
-    .toFile(imagePath);
+    .toFile(target);
 
-  writeMeta({
-    fetchedAt: new Date().toISOString(),
-    image: '/photo.png',
-    file,
-    index,
-    count: photos.length,
-  });
-
-  fs.mkdirSync(path.dirname(statePath), { recursive: true });
-  fs.writeFileSync(statePath, JSON.stringify({ last: file }, null, 2));
-
-  console.log(`Photo written to ${imagePath} (${info.width}x${info.height}, ${GRAY_LEVELS} greys)`);
+  console.log(`Photo written to ${target} (${info.width}x${info.height}, ${grayLevels} greys)`);
 }
 
 fetchPhoto().catch((error) => {

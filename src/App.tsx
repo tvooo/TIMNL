@@ -3,6 +3,7 @@ import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-do
 import { twMerge } from 'tailwind-merge';
 import { APP_PAGES } from './config/pages';
 import { Agenda, Energy, Photo, Weather, Week } from './pages';
+import { useDisplay } from './useDisplay';
 
 // Map icon names to actual icon components
 const iconMap = {
@@ -37,7 +38,7 @@ function Tabs() {
       {pages.map((page, index) => (
         <Link
           key={index}
-          to={page.path}
+          to={{ pathname: page.path, search: location.search }}
           className={twMerge(
             "h-14 w-14 flex items-center justify-center bg-gray-200 rounded-l-xl text-gray-700",
             location.pathname === page.path && "bg-black text-white"
@@ -52,14 +53,18 @@ function Tabs() {
 
 function AppContent() {
   const location = useLocation();
-  // Full-bleed pages (the photo) fill the whole 800x600 frame: no tab rail,
-  // no footer, no padding.
+  const display = useDisplay();
+  // Full-bleed pages (the photo) fill the whole frame: no tab rail, no
+  // footer, no padding.
   const fullBleed = pages.some(
     (page) => page.path === location.pathname && page.fullBleed
   );
 
   return (
-    <div className="w-[800px] h-[600px] bg-white text-black flex flex-col">
+    <div
+      className="bg-white text-black flex flex-col overflow-hidden"
+      style={{ width: display.width, height: display.height }}
+    >
       <main className={twMerge("flex-1 flex flex-row gap-4 pl-12", fullBleed && "gap-0 pl-0")}>
         <div className="grow">
           <Routes>

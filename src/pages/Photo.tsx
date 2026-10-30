@@ -1,10 +1,14 @@
 import photoData from '../../data/photo.json';
 import type { PhotoData } from '../types/photo';
+import { useDisplay } from '../useDisplay';
 
 const data: PhotoData = photoData;
 
 export function Photo() {
-  if (!data.image) {
+  const display = useDisplay();
+  const image = data.images[display.name];
+
+  if (!image) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-8">
@@ -19,14 +23,14 @@ export function Photo() {
 
   return (
     <img
-      src={data.image}
+      src={image}
       alt=""
-      width={800}
-      height={600}
+      width={display.width}
+      height={display.height}
       // Drawn 1:1 at capture size on purpose: any scaling would smear the
-      // Floyd-Steinberg dither fetch-photo.ts baked in for the panel's 16 greys.
-      style={{ imageRendering: 'pixelated' }}
-      className="block w-[800px] h-[600px]"
+      // Floyd-Steinberg dither fetch-photo.ts baked in for the panel's greys.
+      style={{ imageRendering: 'pixelated', width: display.width, height: display.height }}
+      className="block"
     />
   );
 }

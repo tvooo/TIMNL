@@ -47,21 +47,27 @@ kill "$PREVIEW_PID" 2>/dev/null
 trap - EXIT
 
 echo "[render] publishing to $OUTPUT_DIR"
-mkdir -p "$OUTPUT_DIR"
 shopt -s nullglob
-published=0
-for f in screenshots/dashboard-*.png; do
-    name="$(basename "$f")"
-    cp "$f" "$OUTPUT_DIR/.stage-$name" && mv "$OUTPUT_DIR/.stage-$name" "$OUTPUT_DIR/$name"
-    published=$((published + 1))
-done
-if [ "$published" -eq 0 ]; then
-    echo "[render] ERROR: no screenshots produced"
-    exit 1
-fi
-
-ls "$OUTPUT_DIR" | grep '^dashboard-.*\.png$' | sort > "$OUTPUT_DIR/.stage-images.txt"
-mv "$OUTPUT_DIR/.stage-images.txt" "$OUTPUT_DIR/images.txt"
+# Publish one display's screenshots plus its images.txt manifest.
+# The Kindle reads the output root, TRMNL devices read trmnl/.
+publish() {
+    local src="$1" dest="$2" published=0
+    mkdir -p "$dest"
+    for f in "$src"/dashboard-*.png; do
+        name="$(basename "$f")"
+        cp "$f" "$dest/.stage-$name" && mv "$dest/.stage-$name" "$dest/$name"
+        published=$((published + 1))
+    done
+    if [ "$published" -eq 0 ]; then
+        echo "[render] ERROR: no screenshots produced in $src"
+        return 1
+    fi
+    ls "$dest" | grep '^dashboard-.*\.png$' | sort > "$dest/.stage-images.txt"
+    mv "$dest/.stage-images.txt" "$dest/images.txt"
+    echo "[render] published $published images to $dest"
+}
+publish screenshots/kindle "$OUTPUT_DIR" || exit 1
+publish screenshots/trmnl "$OUTPUT_DIR/trmnl" || exit 1
 
 # Render stamp: the manifest content never changes (same filenames every
 # render), so the Kindle polls this to detect that a triggered render
@@ -69,4 +75,4 @@ mv "$OUTPUT_DIR/.stage-images.txt" "$OUTPUT_DIR/images.txt"
 date '+%s' > "$OUTPUT_DIR/.stage-stamp.txt"
 mv "$OUTPUT_DIR/.stage-stamp.txt" "$OUTPUT_DIR/stamp.txt"
 
-echo "[render] done: $published images published at $(date '+%Y-%m-%d %H:%M:%S')"
+echo "[render] done at $(date '+%Y-%m-%d %H:%M:%S')"
