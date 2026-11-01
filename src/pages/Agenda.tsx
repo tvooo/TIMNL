@@ -87,10 +87,10 @@ export function Agenda() {
   const renderEvent = (event: CalendarEvent) => (
     <div
       key={event.id}
-      className="text-sm border-b border-gray-300 pb-2 last:border-0 flex gap-2"
+      className="text-sm border-b border-gray-300 pb-2 compact:pb-1 last:border-0 flex gap-2"
     >
       <div className="flex-1">
-        <div className="flex flex-row font-semibold text-4xl gap-2">
+        <div className="flex flex-row font-semibold text-4xl compact:text-2xl gap-2">
           {!event.isAllDay && (
             <div className="tabular-nums text-gray-700 font-normal">
               {formatTime(event.startDate)}
@@ -99,7 +99,7 @@ export function Agenda() {
           <div className="font-semibold">{event.title}</div>
         </div>
         {!event.isAllDay && (
-          <div className="text-gray-700 text-lg">
+          <div className="text-gray-700 text-lg compact:text-sm">
             {formatTime(event.startDate)} - {formatDate(event.endDate)}
           </div>
         )}
@@ -113,50 +113,50 @@ export function Agenda() {
   const renderTask = (task: Task) => (
     <div
       key={task.id}
-      className="text-sm border-b border-gray-300 pb-2 last:border-0 flex gap-2"
+      className="text-sm border-b border-gray-300 pb-2 compact:pb-1 last:border-0 flex gap-2"
     >
-      <div className="text-3xl">☐</div>
+      <div className="text-3xl compact:text-2xl">☐</div>
       <div className="flex-1">
-        <div className={`text-3xl ${task.isOverdue ? 'text-red-700 font-semibold' : ''}`}>
+        <div className={`text-3xl compact:text-2xl ${task.isOverdue ? 'text-red-700 font-semibold' : ''}`}>
           {task.title}
           {task.isOverdue && ' ⚠️'}
         </div>
         {task.notes && (
-          <div className="text-gray-600 text-lg mt-1">{task.notes}</div>
+          <div className="text-gray-600 text-lg compact:text-sm mt-1">{task.notes}</div>
         )}
       </div>
     </div>
   )
 
   return (
-    <div className="space-y-6 mt-4">
+    <div className="space-y-6 mt-4 pl-4 compact:space-y-3 compact:mt-2">
       {/* Overdue tasks section */}
       {overdueTasks.length > 0 && (
         <div>
-          <h2 className="text-2xl font-bold mb-3 text-red-700">Overdue</h2>
+          <h2 className="text-2xl font-bold mb-3 compact:text-xl compact:mb-1 text-red-700">Overdue</h2>
           <div className="space-y-2">{overdueTasks.map(renderTask)}</div>
         </div>
       )}
 
       {/* Always show Today section */}
       <div>
-        <h2 className="text-2xl font-bold mb-3 text-gray-900">Today</h2>
+        <h2 className="text-2xl font-bold mb-3 compact:text-xl compact:mb-1 text-gray-900">Today</h2>
         {todayEvents.length > 0 || todayTasks.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-4 compact:space-y-2">
             {todayEvents.length > 0 && (
               <div className="space-y-2">{todayEvents.map(renderEvent)}</div>
             )}
             {todayTasks.length > 0 && (
               <div>
                 {todayEvents.length > 0 && (
-                  <h3 className="text-xl font-semibold mb-2 mt-4 text-gray-700">Tasks</h3>
+                  <h3 className="text-xl font-semibold mb-2 mt-4 compact:text-lg compact:mt-2 text-gray-700">Tasks</h3>
                 )}
                 <div className="space-y-2">{todayTasks.map(renderTask)}</div>
               </div>
             )}
           </div>
         ) : (
-          <div className="text-gray-500 text-4xl font-normal">
+          <div className="text-gray-500 text-4xl compact:text-3xl font-normal">
             Nothing scheduled for today ☺️
           </div>
         )}
@@ -165,15 +165,15 @@ export function Agenda() {
       {/* Only show Tomorrow if there are events or tasks */}
       {(tomorrowEvents.length > 0 || tomorrowTasks.length > 0) && (
         <div>
-          <h2 className="text-2xl font-bold mb-3 text-gray-900">Tomorrow</h2>
-          <div className="space-y-4">
+          <h2 className="text-2xl font-bold mb-3 compact:text-xl compact:mb-1 text-gray-900">Tomorrow</h2>
+          <div className="space-y-4 compact:space-y-2">
             {tomorrowEvents.length > 0 && (
               <div className="space-y-2">{tomorrowEvents.map(renderEvent)}</div>
             )}
             {tomorrowTasks.length > 0 && (
               <div>
                 {tomorrowEvents.length > 0 && (
-                  <h3 className="text-xl font-semibold mb-2 mt-4 text-gray-700">Tasks</h3>
+                  <h3 className="text-xl font-semibold mb-2 mt-4 compact:text-lg compact:mt-2 text-gray-700">Tasks</h3>
                 )}
                 <div className="space-y-2">{tomorrowTasks.map(renderTask)}</div>
               </div>

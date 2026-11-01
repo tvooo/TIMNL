@@ -78,16 +78,16 @@ export function Week() {
     const events = eventsByDay.get(dayKey) || []
 
     return (
-      <div key={index} className="p-2">
-        <div className="font-bold text-lg mb-2">
+      <div key={index} className="p-2 compact:p-1.5">
+        <div className="font-bold text-lg mb-2 compact:mb-1">
           {day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1 compact:space-y-0">
           {events.length === 0 ? (
             <div className="text-gray-400 text-md" />
           ) : (
             events.map(event => (
-              <div key={event.id} className="text-md">
+              <div key={event.id} className="text-md compact:text-sm">
                 {!event.isAllDay && (
                   <span className="text-gray-600 text-xs mr-1 tabular-nums">
                     {formatTime(event.startDate)}
@@ -104,8 +104,8 @@ export function Week() {
 
   const renderNextWeekCell = () => {
     return (
-      <div className="p-4">
-        <div className="font-bold text-lg mb-2">Next Week</div>
+      <div className="p-4 compact:px-2 compact:py-1.5">
+        <div className="font-bold text-lg mb-2 compact:mb-1">Next Week</div>
         {nextWeekEvents.length === 0 ? (
           <div className="text-gray-400 text-sm">—</div>
         ) : (
@@ -122,9 +122,13 @@ export function Week() {
   }
 
   return (
-    <div className="h-full w-full grid grid-cols-3 grid-rows-3 gap-px bg-grayx-400 py-2">
+    <div className="h-full w-full grid grid-cols-3 grid-rows-3 compact:grid-rows-[auto_auto_auto] gap-px bg-grayx-400 py-2">
       {weekDays.map((day, index) => (
-        <div key={index} className={isToday(day) ? 'bg-gray-200 rounded-2xl' : 'bg-white'}>
+        // Light grey rounds to white on 4-grey panels, so compact outlines today instead
+        <div
+          key={index}
+          className={isToday(day) ? 'bg-gray-200 rounded-2xl compact:bg-white compact:border-2 compact:border-black' : 'bg-white'}
+        >
           {renderDayCell(day, index)}
         </div>
       ))}
