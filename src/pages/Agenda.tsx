@@ -30,8 +30,11 @@ export function Agenda() {
   const dayAfterTomorrow = new Date(today)
   dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2)
 
-  // Filter events for today and tomorrow
+  // Filter events for today and tomorrow; today's finished events go to
+  // the bottom of the page
+  const now = new Date()
   const todayEvents: CalendarEvent[] = []
+  const pastTodayEvents: CalendarEvent[] = []
   const tomorrowEvents: CalendarEvent[] = []
 
   data.events.forEach(event => {
@@ -39,7 +42,11 @@ export function Agenda() {
     eventDate.setHours(0, 0, 0, 0)
 
     if (eventDate.getTime() === today.getTime()) {
-      todayEvents.push(event)
+      if (!event.isAllDay && new Date(event.endDate) <= now) {
+        pastTodayEvents.push(event)
+      } else {
+        todayEvents.push(event)
+      }
     } else if (eventDate.getTime() === tomorrow.getTime()) {
       tomorrowEvents.push(event)
     }
@@ -76,11 +83,16 @@ export function Agenda() {
     })
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleString('de-DE', {
+  // End time, with the date when the event ends on another day
+  const formatEnd = (event: CalendarEvent) => {
+    const start = new Date(event.startDate)
+    const end = new Date(event.endDate)
+    if (start.toDateString() === end.toDateString()) return formatTime(event.endDate)
+    return end.toLocaleString('de-DE', {
       month: 'short',
       day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     })
   }
 
@@ -100,13 +112,22 @@ export function Agenda() {
         </div>
         {!event.isAllDay && (
           <div className="text-gray-700 text-lg compact:text-sm">
-            {formatTime(event.startDate)} - {formatDate(event.endDate)}
+            until {formatEnd(event)}
           </div>
         )}
         {event.location && (
           <div className="text-gray-600 text-xs">{event.location}</div>
         )}
       </div>
+    </div>
+  )
+
+  const renderPastEvent = (event: CalendarEvent) => (
+    <div key={event.id} className="flex gap-2 text-lg compact:text-sm text-gray-500">
+      <span className="tabular-nums">
+        {formatTime(event.startDate)}–{formatEnd(event)}
+      </span>
+      <span>{event.title}</span>
     </div>
   )
 
@@ -129,7 +150,8 @@ export function Agenda() {
   )
 
   return (
-    <div className="space-y-6 mt-4 pl-4 compact:space-y-3 compact:mt-2">
+    <div className="h-full flex flex-col pt-4 pl-4 compact:pt-2">
+      <div className="flex-1 min-h-0 overflow-hidden space-y-6 compact:space-y-3">
       {/* Overdue tasks section */}
       {overdueTasks.length > 0 && (
         <div>
@@ -157,7 +179,7 @@ export function Agenda() {
           </div>
         ) : (
           <div className="text-gray-500 text-4xl compact:text-3xl font-normal">
-            Nothing scheduled for today ☺️
+            {pastTodayEvents.length > 0 ? 'Nothing else today' : 'Nothing scheduled for today'} ☺️
           </div>
         )}
       </div>
@@ -179,6 +201,14 @@ export function Agenda() {
               </div>
             )}
           </div>
+        </div>
+      )}
+      </div>
+
+      {pastTodayEvents.length > 0 && (
+        <div className="shrink-0 pt-2 pb-2">
+          <h2 className="text-lg compact:text-sm font-semibold text-gray-500">Earlier today</h2>
+          {pastTodayEvents.map(renderPastEvent)}
         </div>
       )}
     </div>

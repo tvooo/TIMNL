@@ -109,9 +109,12 @@ export function Week() {
         {nextWeekEvents.length === 0 ? (
           <div className="text-gray-400 text-sm">—</div>
         ) : (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+          <div className="columns-2 gap-x-4">
             {nextWeekEvents.map(event => (
-              <div key={event.id} className="text-sm font-medium">
+              <div key={event.id} className="text-sm font-medium mb-1 break-inside-avoid">
+                <span className="text-gray-600 text-xs mr-1">
+                  {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short' })}
+                </span>
                 {event.title}
               </div>
             ))}
@@ -122,7 +125,8 @@ export function Week() {
   }
 
   return (
-    <div className="h-full w-full grid grid-cols-3 grid-rows-3 compact:grid-rows-[auto_auto_auto] gap-px bg-grayx-400 py-2">
+    // Weekdays on top; Saturday, Sunday and next week below
+    <div className="h-full w-full grid grid-cols-5 grid-rows-2 compact:grid-rows-[auto_auto] gap-px bg-grayx-400 py-2 pl-1">
       {weekDays.map((day, index) => (
         // Light grey rounds to white on 4-grey panels, so compact outlines today instead
         <div
@@ -132,7 +136,7 @@ export function Week() {
           {renderDayCell(day, index)}
         </div>
       ))}
-      <div className="bg-white col-span-2">
+      <div className="bg-white col-span-3">
         {renderNextWeekCell()}
       </div>
     </div>

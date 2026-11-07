@@ -66,7 +66,7 @@ function AppContent() {
       style={{ width: display.width, height: display.height }}
       data-compact={display.height < 600 || undefined}
     >
-      <main className={twMerge("flex-1 compact:min-h-0 compact:overflow-hidden flex flex-row gap-4", fullBleed && "gap-0")}>
+      <main className={twMerge("flex-1 min-h-0 overflow-hidden flex flex-row gap-4", fullBleed && "gap-0")}>
         <div className="grow">
           <Routes>
             {pages.map((page) => (
