@@ -93,17 +93,9 @@ export function Weather() {
   const CurrentIcon = getIcon(data.current.weatherCode);
 
   return (
-    <div className="h-full w-full px-6 py-4 compact:py-2 flex flex-col">
-      {/* Location and Title */}
-      <div className="flex items-baseline justify-between mb-3 compact:hidden">
-        <h1 className="text-2xl font-bold">Weather</h1>
-        {data.location.name && (
-          <p className="text-gray-600">{data.location.name}</p>
-        )}
-      </div>
-
+    <div className="h-full w-full px-6 flex flex-col py-2">
       {/* Current Weather */}
-      <div className="border-2 border-gray-300 rounded-lg px-5 py-4 mb-4 compact:py-2 compact:mb-2 flex items-center justify-between">
+      <div className="border-2 border-gray-300 rounded-lg px-5 flex items-center justify-between py-2 mb-2">
         <div className="flex items-center gap-5">
           <CurrentIcon className="w-16 h-16" strokeWidth={1.5} />
           <div className="text-5xl font-bold">
@@ -112,7 +104,7 @@ export function Weather() {
         </div>
         <div className="text-right">
           {data.location.name && (
-            <div className="hidden compact:block text-sm text-gray-600">
+            <div className="text-sm text-gray-600">
               {data.location.name}
             </div>
           )}
@@ -127,15 +119,15 @@ export function Weather() {
       </div>
 
       {/* Hourly Forecast */}
-      <div className="mb-4 compact:mb-2">
-        <h2 className="text-lg font-bold mb-2 compact:mb-1">Next Hours</h2>
+      <div className="mb-2">
+        <h2 className="text-lg font-bold mb-1">Next Hours</h2>
         <div className="grid grid-cols-6 gap-2">
           {upcomingHours.map((hour) => {
             const HourIcon = getIcon(hour.weatherCode);
             return (
               <div
                 key={hour.time}
-                className="border border-gray-300 rounded p-2 compact:p-1 text-center"
+                className="border border-gray-300 rounded text-center p-1"
               >
                 <div className="text-xs text-gray-600 mb-1">
                   {formatTime(hour.time)}
@@ -155,14 +147,14 @@ export function Weather() {
 
       {/* Daily Forecast */}
       <div className="flex-1 min-h-0">
-        <h2 className="text-lg font-bold mb-2 compact:mb-1">Coming Days</h2>
+        <h2 className="text-lg font-bold mb-1">Coming Days</h2>
         <div className="grid grid-cols-5 gap-2">
           {data.daily.slice(0, 5).map((day) => {
             const DayIcon = getIcon(day.weatherCode);
             return (
               <div
                 key={day.date}
-                className="border border-gray-300 rounded p-2 compact:p-1 text-center"
+                className="border border-gray-300 rounded text-center p-1"
               >
                 <div className="text-sm font-semibold mb-1">
                   {formatDate(day.date)}

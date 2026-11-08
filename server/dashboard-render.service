@@ -1,5 +1,5 @@
 [Unit]
-Description=Render Kindle dashboard images
+Description=Render dashboard images
 After=network-online.target
 Wants=network-online.target
 

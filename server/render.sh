@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 # Full render cycle: fetch data -> static build -> capture screenshots ->
-# publish images to the directory Caddy serves.
-# Run by the systemd timer, and by trigger-handler.sh when the Kindle's
-# center button requests a hard refresh. Serialized with a lock so
-# concurrent invocations queue instead of colliding.
+# publish images to the directory the TRMNL server serves.
+# Run by the systemd timer. Serialized with a lock so concurrent
+# invocations queue instead of colliding.
 set -uo pipefail
 
 REPO_DIR="${REPO_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-OUTPUT_DIR="${OUTPUT_DIR:-/srv/kindle-dashboard}"
+OUTPUT_DIR="${OUTPUT_DIR:-/srv/dashboard}"
 PREVIEW_PORT="${PREVIEW_PORT:-4173}"
-LOCK_FILE="${LOCK_FILE:-/tmp/kindle-dashboard-render.lock}"
+LOCK_FILE="${LOCK_FILE:-/tmp/dashboard-render.lock}"
 
 exec 9>"$LOCK_FILE"
 flock 9
@@ -47,32 +46,24 @@ kill "$PREVIEW_PID" 2>/dev/null
 trap - EXIT
 
 echo "[render] publishing to $OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
 shopt -s nullglob
-# Publish one display's screenshots plus its images.txt manifest.
-# The Kindle reads the output root, TRMNL devices read trmnl/.
-publish() {
-    local src="$1" dest="$2" published=0
-    mkdir -p "$dest"
-    for f in "$src"/dashboard-*.png; do
-        name="$(basename "$f")"
-        cp "$f" "$dest/.stage-$name" && mv "$dest/.stage-$name" "$dest/$name"
-        published=$((published + 1))
-    done
-    if [ "$published" -eq 0 ]; then
-        echo "[render] ERROR: no screenshots produced in $src"
-        return 1
-    fi
-    ls "$dest" | grep '^dashboard-.*\.png$' | sort > "$dest/.stage-images.txt"
-    mv "$dest/.stage-images.txt" "$dest/images.txt"
-    echo "[render] published $published images to $dest"
-}
-publish screenshots/kindle "$OUTPUT_DIR" || exit 1
-publish screenshots/trmnl "$OUTPUT_DIR/trmnl" || exit 1
+images=()
+for f in screenshots/dashboard-*.png; do
+    name="$(basename "$f")"
+    cp "$f" "$OUTPUT_DIR/.stage-$name" && mv "$OUTPUT_DIR/.stage-$name" "$OUTPUT_DIR/$name"
+    images+=("$name")
+done
+if [ "${#images[@]}" -eq 0 ]; then
+    echo "[render] ERROR: no screenshots produced"
+    exit 1
+fi
+printf '%s\n' "${images[@]}" > "$OUTPUT_DIR/.stage-images.txt"
+mv "$OUTPUT_DIR/.stage-images.txt" "$OUTPUT_DIR/images.txt"
 
-# Render stamp: the manifest content never changes (same filenames every
-# render), so the Kindle polls this to detect that a triggered render
-# has published.
-date '+%s' > "$OUTPUT_DIR/.stage-stamp.txt"
-mv "$OUTPUT_DIR/.stage-stamp.txt" "$OUTPUT_DIR/stamp.txt"
+# Drop images of pages no longer rendered
+for f in "$OUTPUT_DIR"/dashboard-*.png; do
+    grep -qxF "$(basename "$f")" "$OUTPUT_DIR/images.txt" || rm -f "$f"
+done
 
-echo "[render] done at $(date '+%Y-%m-%d %H:%M:%S')"
+echo "[render] done: ${#images[@]} images at $(date '+%Y-%m-%d %H:%M:%S')"

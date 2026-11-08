@@ -2,15 +2,13 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import sharp from 'sharp';
-import { DISPLAYS, type DisplayConfig, type DisplayName } from '../src/config/displays';
+import { DISPLAY } from '../src/config/display';
 
 dotenv.config();
 
-// One image per display, at its frame size and grey depth. The Kindle page
-// is laid out landscape and capture.ts rotates the whole screenshot, so the
-// photo is prepared landscape here and lands upright on the wall.
-// Quantising here with Floyd-Steinberg gives smooth gradients instead of the
-// hard banding the display drivers produce on their own.
+// Prepared at the panel's frame size and grey depth. Quantising here with
+// Floyd-Steinberg gives smooth gradients instead of the hard banding the
+// display driver produces on its own.
 
 const SOURCE_EXTENSIONS = [
   '.jpg', '.jpeg', '.png', '.webp', '.avif', '.tif', '.tiff', '.gif',
@@ -23,7 +21,7 @@ const fit: 'contain' | 'cover' = process.env.PHOTO_FIT === 'cover' ? 'cover' : '
 
 interface PhotoData {
   fetchedAt: string;
-  images: Partial<Record<DisplayName, string>>;
+  image: string;
   file: string;
   index: number;
   count: number;
@@ -38,7 +36,7 @@ function writeMeta(meta: PhotoData) {
 function emptyMeta(error?: string): PhotoData {
   return {
     fetchedAt: new Date().toISOString(),
-    images: {},
+    image: '',
     file: '',
     index: 0,
     count: 0,
@@ -119,15 +117,11 @@ async function fetchPhoto() {
   const source = path.join(photosDir, file);
   console.log(`Photo ${index + 1}/${photos.length}: ${file}`);
 
-  const images: PhotoData['images'] = {};
-  for (const name of Object.keys(DISPLAYS) as DisplayName[]) {
-    images[name] = `/photo-${name}.png`;
-    await preparePhoto(source, path.join(process.cwd(), 'public', images[name]), DISPLAYS[name]);
-  }
+  await preparePhoto(source, path.join(process.cwd(), 'public/photo.png'));
 
   writeMeta({
     fetchedAt: new Date().toISOString(),
-    images,
+    image: '/photo.png',
     file,
     index,
     count: photos.length,
@@ -137,11 +131,8 @@ async function fetchPhoto() {
   fs.writeFileSync(statePath, JSON.stringify({ last: file }, null, 2));
 }
 
-async function preparePhoto(
-  source: string,
-  target: string,
-  { width, height, grayLevels }: DisplayConfig,
-) {
+async function preparePhoto(source: string, target: string) {
+  const { width, height, grayLevels } = DISPLAY;
   // rotate() with no argument applies the EXIF orientation; normalise()
   // stretches the tonal range, which matters on a panel with few greys.
   const { data, info } = await sharp(source, { failOn: 'none' })

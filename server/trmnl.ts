@@ -1,14 +1,14 @@
 // TRMNL "bring your own server" device API, run with Bun. Serves the
-// dashboard images render.sh publishes to $OUTPUT_DIR/trmnl to devices
-// running TRMNL firmware. Each /api/display call advances to the next page,
-// so the device's button flips pages too.
+// dashboard images render.sh publishes to $OUTPUT_DIR to devices running
+// TRMNL firmware. Each /api/display call advances to the next page, so the
+// device's button flips pages too.
 //
-// No device authentication: like the Caddy image server, it's LAN-only.
+// No device authentication: it's LAN-only.
 import { createHash } from 'crypto';
 import { basename, join } from 'path';
 
 const PORT = Number(process.env.TRMNL_PORT || 8092);
-const IMAGE_DIR = join(process.env.OUTPUT_DIR || '/srv/kindle-dashboard', 'trmnl');
+const IMAGE_DIR = process.env.OUTPUT_DIR || '/srv/dashboard';
 const REFRESH_RATE = Number(process.env.TRMNL_REFRESH_RATE || 900);
 
 const pageIndex = new Map<string, number>();
@@ -24,7 +24,7 @@ async function listImages(): Promise<string[]> {
 async function screen(origin: string, image: string) {
   const { mtimeMs } = await Bun.file(join(IMAGE_DIR, image)).stat();
   return {
-    image_url: `${origin}/trmnl/${image}`,
+    image_url: `${origin}/images/${image}`,
     filename: `${basename(image, '.png')}-${Math.floor(mtimeMs / 1000)}`,
   };
 }
@@ -79,7 +79,7 @@ Bun.serve({
       console.log(`[log] ${req.headers.get('ID')}: ${await req.text()}`);
       return new Response(null, { status: 204 });
     }
-    if (req.method === 'GET' && url.pathname.startsWith('/trmnl/')) {
+    if (req.method === 'GET' && url.pathname.startsWith('/images/')) {
       const file = Bun.file(join(IMAGE_DIR, basename(url.pathname)));
       if (await file.exists()) return new Response(file);
     }

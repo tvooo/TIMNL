@@ -1,37 +1,28 @@
 # Architecture
 
-A kitchen dashboard on a jailbroken Kindle 4 and a reTerminal E1001 running
-TRMNL firmware. The server renders web pages to e-ink-ready PNGs, once per
-display (`src/config/displays.ts`); the devices pull and display them. The Kindle never
-needs to be reachable from the server, and keeps WiFi off between fetches.
+A kitchen dashboard on a reTerminal E1001 running TRMNL firmware. The
+server renders web pages to e-paper-ready PNGs (800x480, 2-bit greyscale;
+see `src/config/display.ts`) and serves them to the device.
 
 ```
 ┌─────────────────── server (ThinkPad, Arch) ────────────────────┐
 │  systemd timer (15 min) → render.sh:                           │
 │    fetch data (CalDAV, HA, Open-Meteo, Reminders, photos/)     │
-│    → vite build → Playwright capture → rotate/grayscale        │
-│    → /srv/kindle-dashboard/*.png + images.txt                  │
-│  Caddy :8090  serves the images                                │
-│  systemd socket :8091  GET = re-render now (hard refresh)      │
-│  Bun :8092  TRMNL device API, serves trmnl/*.png               │
+│    → vite build → Playwright capture → 2-bit greyscale PNGs    │
+│    → /srv/dashboard/*.png + images.txt                         │
+│  Bun :8092  TRMNL device API, serves the images                │
 └────────────────────────────────────────────────────────────────┘
-                 ▲ HTTP pull (WiFi cycled on/off)
-┌─────────────────── Kindle (/mnt/us/dashboard) ─────────────────┐
-│  cron (30 min): fetch-images.sh → wget PNGs → eips → WiFi off  │
-│  buttons.sh daemon: ◀/▶ prev/next · center = hard refresh      │
-│                     Home = redraw                              │
-│  boot hook: dashboard mode persists across reboots             │
+                 ▲ HTTP pull on every wake
+┌──────────────── reTerminal E1001 (TRMNL firmware) ─────────────┐
+│  wakes every 15 min or on button press → next page             │
 └────────────────────────────────────────────────────────────────┘
 ```
 
 ## Setup
 
 1. Server: [`server/README.md`](server/README.md)
-2. Kindle: [`kindle/README.md`](kindle/README.md) — one command:
-   `kindle/bootstrap.sh <kindle-ip>`
-3. TRMNL device: in the firmware's WiFi setup portal, set the custom
-   server URL to `http://<server>:8092`. Every wake (timer or button) shows
-   the next page.
+2. Device: in the firmware's WiFi setup portal, set the custom server URL
+   to `http://<server>:8092`.
 
 ## Local development
 
@@ -40,7 +31,6 @@ npm install
 npm run fetch-calendar    # + fetch-energy / fetch-weather / fetch-tasks / fetch-photo
 npm run dev               # http://localhost:3000
                           # pages: / /week /energy /weather /photo
-                          # append ?display=trmnl for the 800x480 frame
 ```
 
 Pages are React components in `src/pages/`, registered in
@@ -61,13 +51,12 @@ disturb the rotation. Drop images in with plain scp:
 scp ~/holiday/*.jpg server:~/timnl/photos/
 ```
 
-`scripts/fetch-photo.ts` prepares the picked image once per display: EXIF
-orientation applied, fitted to the frame, greyscaled, contrast-normalised,
-and Floyd-Steinberg dithered down to the grey levels the panel can actually
-show (16 on the Kindle, 4 on the TRMNL) — without dithering, gradients band
-badly. The results are written to `public/photo-<display>.png` and drawn 1:1
-by the page, so the capture step is lossless and the dither reaches the
-display exactly as computed.
+`scripts/fetch-photo.ts` prepares the picked image for the panel: EXIF
+orientation applied, fitted to 800x480, greyscaled, contrast-normalised,
+and Floyd-Steinberg dithered down to the panel's 4 grey levels — without
+dithering, gradients band badly. The result is written to
+`public/photo.png` and drawn 1:1 by the page, so the capture step is
+lossless and the dither reaches the display exactly as computed.
 
 Two env vars (see `.env.example`): `PHOTOS_DIR` (default `photos`, absolute
 paths fine) and `PHOTO_FIT` — `contain` (default, whole photo with white
@@ -79,10 +68,3 @@ To test the full render pipeline locally:
 ```bash
 OUTPUT_DIR=/tmp/dash-test server/render.sh && open /tmp/dash-test
 ```
-
-## Legacy
-
-`DEPLOY.md` / `npm run deploy` describe the old push-over-SSH flow (server
-scp's images to the Kindle). It still works when the Kindle has WiFi on —
-occasionally handy during development — but the pull model above is what
-runs in production.

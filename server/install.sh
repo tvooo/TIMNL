@@ -2,14 +2,13 @@
 # Install the dashboard render pipeline on the server (Arch, systemd).
 # Run from the repo on the server, as your normal user:
 #   sudo server/install.sh
-# Installs the render timer, the hard-refresh trigger socket and (if bun
-# is installed) the TRMNL device API, creates the output directory, and
-# prints the Caddy snippet to add.
+# Installs the render timer and the TRMNL device API, and creates the
+# output directory.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
-OUTPUT_DIR="${OUTPUT_DIR:-/srv/kindle-dashboard}"
+OUTPUT_DIR="${OUTPUT_DIR:-/srv/dashboard}"
 RUN_USER="${SUDO_USER:-$(whoami)}"
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -35,17 +34,14 @@ fi
 # bun from a package, or from the bun.sh installer in the user's home
 RUN_HOME="$(getent passwd "$RUN_USER" | cut -d: -f6)"
 BUN_PATH="${BUN_PATH:-$(command -v bun || { [ -x "$RUN_HOME/.bun/bin/bun" ] && echo "$RUN_HOME/.bun/bin/bun"; } || true)}"
-units=(dashboard-render.service dashboard-render.timer
-       dashboard-trigger.socket dashboard-trigger@.service)
-if [ -n "$BUN_PATH" ]; then
-    echo "== Using bun for the TRMNL server: $BUN_PATH =="
-    units+=(dashboard-trmnl.service)
-else
-    echo "== No bun found; skipping the TRMNL server (install it from https://bun.sh, then re-run) =="
+if [ -z "$BUN_PATH" ]; then
+    echo "No bun found; install it from https://bun.sh, then re-run." >&2
+    exit 1
 fi
+echo "== Using bun for the TRMNL server: $BUN_PATH =="
 
 echo "== Installing systemd units (user=$RUN_USER, repo=$REPO_DIR) =="
-for unit in "${units[@]}"; do
+for unit in dashboard-render.service dashboard-render.timer dashboard-trmnl.service; do
     sed -e "s|__USER__|$RUN_USER|g" \
         -e "s|__REPO_DIR__|$REPO_DIR|g" \
         -e "s|__OUTPUT_DIR__|$OUTPUT_DIR|g" \
@@ -61,29 +57,19 @@ chown "$RUN_USER" "$OUTPUT_DIR"
 
 systemctl daemon-reload
 systemctl enable --now dashboard-render.timer
-systemctl enable --now dashboard-trigger.socket
-[ -n "$BUN_PATH" ] && systemctl enable --now dashboard-trmnl.service
+systemctl enable dashboard-trmnl.service
+systemctl restart dashboard-trmnl.service
 
 cat <<EOF
 
 == Installed ==
  - dashboard-render.timer   renders every 15 min (edit the .timer to change)
- - dashboard-trigger.socket hard-refresh endpoint on port 8091
- - dashboard-trmnl.service  TRMNL device API on port 8092 (if bun was found)
+ - dashboard-trmnl.service  TRMNL device API on port 8092
 
 Next steps:
- 1. Serve the images with Caddy - add to /etc/caddy/Caddyfile:
-
-      http://:8090 {
-          root * $OUTPUT_DIR
-          file_server
-      }
-
-    then: sudo systemctl reload caddy
-
- 2. Test a render now:
+ 1. Test a render now:
       sudo systemctl start dashboard-render.service
       journalctl -u dashboard-render.service -f
 
- 3. Verify: curl http://localhost:8090/images.txt
+ 2. Verify: curl -H 'ID: test' http://localhost:8092/api/display
 EOF

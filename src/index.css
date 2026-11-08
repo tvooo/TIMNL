@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* Tighter layouts for frames shorter than the Kindle's (App sets data-compact) */
-@custom-variant compact (&:where([data-compact], [data-compact] *));
-
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

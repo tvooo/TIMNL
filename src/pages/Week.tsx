@@ -78,16 +78,16 @@ export function Week() {
     const events = eventsByDay.get(dayKey) || []
 
     return (
-      <div key={index} className="p-2 compact:p-1.5">
-        <div className="font-bold text-lg mb-2 compact:mb-1">
+      <div key={index} className="p-1.5">
+        <div className="font-bold text-lg mb-1">
           {day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}
         </div>
-        <div className="space-y-1 compact:space-y-0">
+        <div>
           {events.length === 0 ? (
             <div className="text-gray-400 text-md" />
           ) : (
             events.map(event => (
-              <div key={event.id} className="text-md compact:text-sm">
+              <div key={event.id} className="text-sm">
                 {!event.isAllDay && (
                   <span className="text-gray-600 text-xs mr-1 tabular-nums">
                     {formatTime(event.startDate)}
@@ -104,8 +104,8 @@ export function Week() {
 
   const renderNextWeekCell = () => {
     return (
-      <div className="p-4 compact:px-2 compact:py-1.5">
-        <div className="font-bold text-lg mb-2 compact:mb-1">Next Week</div>
+      <div className="px-2 py-1.5">
+        <div className="font-bold text-lg mb-1">Next Week</div>
         {nextWeekEvents.length === 0 ? (
           <div className="text-gray-400 text-sm">—</div>
         ) : (
@@ -126,12 +126,12 @@ export function Week() {
 
   return (
     // Weekdays on top; Saturday, Sunday and next week below
-    <div className="h-full w-full grid grid-cols-5 grid-rows-2 compact:grid-rows-[auto_auto] gap-px bg-grayx-400 py-2 pl-1">
+    <div className="h-full w-full grid grid-cols-5 gap-px bg-grayx-400 py-2 pl-1 grid-rows-[auto_auto]">
       {weekDays.map((day, index) => (
-        // Light grey rounds to white on 4-grey panels, so compact outlines today instead
+        // Light grey rounds to white at 4 greys, so today gets an outline
         <div
           key={index}
-          className={isToday(day) ? 'bg-gray-200 rounded-2xl compact:bg-white compact:border-2 compact:border-black' : 'bg-white'}
+          className={isToday(day) ? 'bg-white rounded-2xl border-2 border-black' : 'bg-white'}
         >
           {renderDayCell(day, index)}
         </div>

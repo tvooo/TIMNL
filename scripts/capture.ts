@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { chromium, type Page } from 'playwright';
 import sharp from 'sharp';
-import { DISPLAYS, type DisplayConfig, type DisplayName } from '../src/config/displays';
+import { DISPLAY } from '../src/config/display';
 import { APP_PAGES } from '../src/config/pages';
 import { encodeGrayPng } from './gray-png';
 
@@ -19,36 +19,15 @@ const PAGES = APP_PAGES.map((page, index) => ({
   name: page.name,
 }));
 
-// Rotate for the panel's mounting, convert to greyscale, and write either an
-// 8-bit PNG or a packed low-depth one for panels that need it
-async function processScreenshot(screenshot: Buffer, display: DisplayConfig, target: string) {
-  const image = sharp(screenshot).rotate(display.rotate).grayscale();
-
-  if (display.bitDepth) {
-    const { data, info } = await image.raw().toBuffer({ resolveWithObject: true });
-    fs.writeFileSync(target, encodeGrayPng(data, info.width, info.height, display.bitDepth));
-    return;
-  }
-
-  await image
-    .toColorspace('b-w') // ensures it's truly grayscale colorspace
-    .png({
-      compressionLevel: 9,
-      palette: false, // prevents palette-based PNG
-    })
-    .toFile(target);
-}
-
-async function captureDisplay(page: Page, name: DisplayName) {
-  const display = DISPLAYS[name];
-  const outputPath = path.join(process.cwd(), CONFIG.outputDir, name);
+async function capturePages(page: Page) {
+  const outputPath = path.join(process.cwd(), CONFIG.outputDir);
+  // Start clean so pages removed from the config don't linger
+  fs.rmSync(outputPath, { recursive: true, force: true });
   fs.mkdirSync(outputPath, { recursive: true });
 
-  await page.setViewportSize({ width: display.width, height: display.height });
-
   for (const pageConfig of PAGES) {
-    const url = `${CONFIG.serverUrl}${pageConfig.url}?display=${name}`;
-    console.log(`\n[${name}/${pageConfig.name}] Navigating to ${url}...`);
+    const url = `${CONFIG.serverUrl}${pageConfig.url}`;
+    console.log(`\n[${pageConfig.name}] Navigating to ${url}...`);
 
     await page.goto(url, {
       waitUntil: 'networkidle',
@@ -58,10 +37,15 @@ async function captureDisplay(page: Page, name: DisplayName) {
     console.log(`Waiting ${CONFIG.waitTime}ms for content to render...`);
     await page.waitForTimeout(CONFIG.waitTime);
 
+    // Greyscale, packed to the panel's depth
+    const { data, info } = await sharp(await page.screenshot({ fullPage: false }))
+      .grayscale()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
     const target = path.join(outputPath, pageConfig.filename);
-    await processScreenshot(await page.screenshot({ fullPage: false }), display, target);
+    fs.writeFileSync(target, encodeGrayPng(data, info.width, info.height, DISPLAY.bitDepth));
 
-    console.log(`[${name}/${pageConfig.name}] Screenshot saved: ${target}`);
+    console.log(`[${pageConfig.name}] Screenshot saved: ${target}`);
   }
 }
 
@@ -74,14 +58,13 @@ async function captureScreenshots() {
   });
 
   try {
-    const context = await browser.newContext({ deviceScaleFactor: 1 });
-    const page = await context.newPage();
+    const context = await browser.newContext({
+      viewport: { width: DISPLAY.width, height: DISPLAY.height },
+      deviceScaleFactor: 1,
+    });
+    await capturePages(await context.newPage());
 
-    for (const name of Object.keys(DISPLAYS) as DisplayName[]) {
-      await captureDisplay(page, name);
-    }
-
-    console.log(`\nTotal screenshots captured: ${PAGES.length} per display`);
+    console.log(`\nTotal screenshots captured: ${PAGES.length}`);
 
   } catch (error) {
     console.error('Error capturing screenshot:', error.message);

@@ -1,6 +1,6 @@
 # Apple Reminders Export Shortcut Setup
 
-This Shortcut exports your Apple Reminders to JSON format for the Kindle dashboard.
+This Shortcut exports your Apple Reminders to JSON format for the dashboard.
 
 ## Shortcut Instructions
 
