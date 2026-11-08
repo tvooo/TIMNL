@@ -32,12 +32,6 @@ export const APP_PAGES: PageConfig[] = [
     icon: 'ZapIcon',
   },
   {
-    path: '/weather',
-    name: 'weather',
-    component: 'Weather',
-    icon: 'CloudSunIcon',
-  },
-  {
     path: '/photo',
     name: 'photo',
     component: 'Photo',

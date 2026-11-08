@@ -5,7 +5,6 @@ import {
   BatteryWarningIcon,
   Calendar1Icon,
   CalendarDaysIcon,
-  CloudSunIcon,
   ImageIcon,
   ZapIcon,
 } from 'lucide-react';
@@ -13,8 +12,9 @@ import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-do
 import { twMerge } from 'tailwind-merge';
 import { DISPLAY } from './config/display';
 import { APP_PAGES } from './config/pages';
-import { Agenda, Energy, Photo, Weather, Week } from './pages';
+import { Agenda, Energy, Photo, Week } from './pages';
 import type { BatteryData } from './types/battery';
+import { weather, weatherDescription, weatherIcon } from './weather';
 
 // Written by the TRMNL server; absent until the device first reports
 const battery = Object.values(
@@ -25,7 +25,6 @@ const battery = Object.values(
 const iconMap = {
   Calendar1Icon,
   CalendarDaysIcon,
-  CloudSunIcon,
   ImageIcon,
   ZapIcon,
 };
@@ -35,7 +34,6 @@ const componentMap = {
   Agenda,
   Week,
   Energy,
-  Weather,
   Photo,
 };
 
@@ -81,6 +79,17 @@ function Battery({ percent }: BatteryData) {
   );
 }
 
+function CurrentWeather() {
+  const { temperature, weatherCode } = weather.current;
+  const Icon = weatherIcon(weatherCode);
+  return (
+    <span className="flex items-center gap-1">
+      <Icon className="w-5 h-5" />
+      {Math.round(temperature)}° {weatherDescription(weatherCode)}
+    </span>
+  );
+}
+
 function AppContent() {
   const location = useLocation();
   // Full-bleed pages (the photo) fill the whole frame: no tab rail, no
@@ -116,6 +125,7 @@ function AppContent() {
 
       {!fullBleed && (
         <footer className="mt-auto flex justify-end items-center gap-4 p-2 text-sm text-gray-600">
+          {!weather.error && <CurrentWeather />}
           {battery && <Battery {...battery} />}
           <span>Last updated: {new Date().toLocaleString('de-DE')}</span>
         </footer>

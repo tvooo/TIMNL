@@ -1,5 +1,6 @@
 import calendarData from '../../data/calendar.json'
 import type { CalendarData, CalendarEvent } from '../types/calendar'
+import { dailyForecast, weatherIcon } from '../weather'
 
 export function Week() {
   const data = calendarData as CalendarData
@@ -76,11 +77,22 @@ export function Week() {
   const renderDayCell = (day: Date, index: number) => {
     const dayKey = day.toISOString().split('T')[0]
     const events = eventsByDay.get(dayKey) || []
+    // sv-SE formats as YYYY-MM-DD in local time, matching the forecast dates
+    const forecast = dailyForecast(day.toLocaleDateString('sv-SE'))
+    const ForecastIcon = forecast && weatherIcon(forecast.weatherCode)
 
     return (
       <div key={index} className="p-1.5">
-        <div className="font-bold text-lg mb-1">
-          {day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}
+        <div className="flex items-center justify-between mb-1">
+          <span className="font-bold text-lg">
+            {day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}
+          </span>
+          {forecast && ForecastIcon && (
+            <span className="flex items-center gap-1 text-xs tabular-nums">
+              <ForecastIcon className="w-4 h-4" />
+              {Math.round(forecast.temperatureMin)}–{Math.round(forecast.temperatureMax)}°
+            </span>
+          )}
         </div>
         <div>
           {events.length === 0 ? (

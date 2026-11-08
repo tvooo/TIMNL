@@ -2,6 +2,7 @@ import calendarData from '../../data/calendar.json'
 import tasksData from '../../data/tasks.json'
 import type { CalendarData, CalendarEvent } from '../types/calendar'
 import type { TaskData, Task } from '../types/tasks'
+import { formatHour, upcomingHours, weatherIcon } from '../weather'
 
 export function Agenda() {
   const data = calendarData as CalendarData
@@ -131,6 +132,22 @@ export function Agenda() {
     </div>
   )
 
+  // Next hours as a narrow column beside the agenda, so it costs no height
+  const renderHours = () => (
+    <div className="shrink-0 pt-3 space-y-1 text-sm">
+      {upcomingHours(12).map(hour => {
+        const Icon = weatherIcon(hour.weatherCode)
+        return (
+          <div key={hour.time} className="flex items-center gap-2 tabular-nums">
+            <span className="text-gray-600">{formatHour(hour.time)}</span>
+            <Icon className="w-4 h-4" />
+            <span className="w-7 text-right font-semibold">{Math.round(hour.temperature)}°</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+
   const renderTask = (task: Task) => (
     <div
       key={task.id}
@@ -150,7 +167,8 @@ export function Agenda() {
   )
 
   return (
-    <div className="h-full flex flex-col pl-4 pt-2">
+    <div className="h-full flex gap-4 pl-4">
+    <div className="flex-1 min-w-0 flex flex-col pt-2">
       <div className="flex-1 min-h-0 overflow-hidden space-y-3">
       {/* Overdue tasks section */}
       {overdueTasks.length > 0 && (
@@ -211,6 +229,8 @@ export function Agenda() {
           {pastTodayEvents.map(renderPastEvent)}
         </div>
       )}
+    </div>
+    {renderHours()}
     </div>
   );
 }

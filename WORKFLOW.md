@@ -30,7 +30,7 @@ see `src/config/display.ts`) and serves them to the device.
 npm install
 npm run fetch-calendar    # + fetch-energy / fetch-weather / fetch-tasks / fetch-photo
 npm run dev               # http://localhost:3000
-                          # pages: / /week /energy /weather /photo
+                          # pages: / /week /energy /photo
 ```
 
 Pages are React components in `src/pages/`, registered in

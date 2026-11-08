@@ -34,7 +34,7 @@ export interface WeatherData {
   error?: string;
 }
 
-// WMO Weather interpretation codes. Icons live in the Weather page as
+// WMO Weather interpretation codes. Icons live in src/weather.ts as
 // lucide components — emoji glyphs don't render in the headless browser
 // on the render server.
 export const WEATHER_CODES: Record<number, { description: string }> = {
