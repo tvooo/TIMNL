@@ -1,9 +1,25 @@
-import { Calendar1Icon, CalendarDaysIcon, CloudSunIcon, ImageIcon, ZapIcon } from 'lucide-react';
+import {
+  BatteryFullIcon,
+  BatteryLowIcon,
+  BatteryMediumIcon,
+  BatteryWarningIcon,
+  Calendar1Icon,
+  CalendarDaysIcon,
+  CloudSunIcon,
+  ImageIcon,
+  ZapIcon,
+} from 'lucide-react';
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { DISPLAY } from './config/display';
 import { APP_PAGES } from './config/pages';
 import { Agenda, Energy, Photo, Weather, Week } from './pages';
+import type { BatteryData } from './types/battery';
+
+// Written by the TRMNL server; absent until the device first reports
+const battery = Object.values(
+  import.meta.glob<BatteryData>('../data/battery.json', { eager: true, import: 'default' })
+)[0];
 
 // Map icon names to actual icon components
 const iconMap = {
@@ -51,6 +67,20 @@ function Tabs() {
   );
 }
 
+function Battery({ percent }: BatteryData) {
+  const Icon =
+    percent >= 75 ? BatteryFullIcon
+    : percent >= 40 ? BatteryMediumIcon
+    : percent >= 15 ? BatteryLowIcon
+    : BatteryWarningIcon;
+  return (
+    <span className="flex items-center gap-1">
+      <Icon className="w-5 h-5" />
+      {percent}%
+    </span>
+  );
+}
+
 function AppContent() {
   const location = useLocation();
   // Full-bleed pages (the photo) fill the whole frame: no tab rail, no
@@ -85,8 +115,9 @@ function AppContent() {
       </main>
 
       {!fullBleed && (
-        <footer className="mt-auto text-right p-2 text-sm text-gray-600">
-          Last updated: {new Date().toLocaleString('de-DE')}
+        <footer className="mt-auto flex justify-end items-center gap-4 p-2 text-sm text-gray-600">
+          {battery && <Battery {...battery} />}
+          <span>Last updated: {new Date().toLocaleString('de-DE')}</span>
         </footer>
       )}
     </div>

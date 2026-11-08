@@ -1,7 +1,8 @@
 // TRMNL "bring your own server" device API, run with Bun. Serves the
 // dashboard images render.sh publishes to $OUTPUT_DIR to devices running
 // TRMNL firmware. Each /api/display call advances to the next page, so the
-// device's button flips pages too.
+// device's button flips pages too. The reported battery level is saved to
+// data/battery.json, which the next render shows in the footer.
 //
 // No device authentication: it's LAN-only.
 import { createHash } from 'crypto';
@@ -9,9 +10,41 @@ import { basename, join } from 'path';
 
 const PORT = Number(process.env.TRMNL_PORT || 8092);
 const IMAGE_DIR = process.env.OUTPUT_DIR || '/srv/dashboard';
+const BATTERY_FILE = join(import.meta.dir, '..', 'data', 'battery.json');
+
+// Single-cell LiPo, volts to percent; interpolated in between
+const DISCHARGE_CURVE = [
+  [4.2, 100], [4.1, 90], [4.0, 80], [3.9, 65], [3.8, 50],
+  [3.7, 30], [3.6, 15], [3.5, 5], [3.4, 0],
+];
 const REFRESH_RATE = Number(process.env.TRMNL_REFRESH_RATE || 900);
 
 const pageIndex = new Map<string, number>();
+
+function batteryPercent(voltage: number): number {
+  if (voltage >= DISCHARGE_CURVE[0][0]) return 100;
+  for (let i = 1; i < DISCHARGE_CURVE.length; i++) {
+    const [v, p] = DISCHARGE_CURVE[i];
+    if (voltage >= v) {
+      const [vAbove, pAbove] = DISCHARGE_CURVE[i - 1];
+      return Math.round(p + ((voltage - v) / (vAbove - v)) * (pAbove - p));
+    }
+  }
+  return 0;
+}
+
+async function saveBattery(header: string | null) {
+  const voltage = Number(header);
+  if (!header || !(voltage > 0)) return;
+  await Bun.write(
+    BATTERY_FILE,
+    JSON.stringify(
+      { voltage, percent: batteryPercent(voltage), reportedAt: new Date().toISOString() },
+      null,
+      2,
+    ),
+  );
+}
 
 async function listImages(): Promise<string[]> {
   const manifest = Bun.file(join(IMAGE_DIR, 'images.txt'));
@@ -49,6 +82,8 @@ async function display(req: Request, origin: string) {
     console.log(`[display] ${id}: no images in ${IMAGE_DIR}`);
     return new Response('no images rendered yet', { status: 503 });
   }
+
+  await saveBattery(req.headers.get('Battery-Voltage'));
 
   const index = ((pageIndex.get(id) ?? -1) + 1) % images.length;
   pageIndex.set(id, index);

@@ -11,8 +11,9 @@ timer and serves them to the TRMNL device with a small Bun server.
 - `dashboard-render.timer` / `.service` — runs `render.sh` every 15 min
 - `trmnl.ts` / `dashboard-trmnl.service` — TRMNL device API (`/api/setup`,
   `/api/display`, `/api/log`) on port 8092, run with Bun. Serves the
-  images, advancing one page per device wake. Refresh interval:
-  `TRMNL_REFRESH_RATE` in the unit (seconds, default 900)
+  images, advancing one page per device wake. Saves the device's battery
+  level to `data/battery.json`, which the next render shows in the footer.
+  Refresh interval: `TRMNL_REFRESH_RATE` in the unit (seconds, default 900)
 
 ## Install
 
