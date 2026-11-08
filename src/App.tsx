@@ -51,7 +51,7 @@ function Tabs() {
 
   return (
     <div className="h-full relative gap-1 flex flex-col pt-2">
-      {pages.map((page, index) => (
+      {pages.filter((page) => !page.disabled).map((page, index) => (
         <Link
           key={index}
           to={page.path}

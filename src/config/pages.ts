@@ -8,6 +8,8 @@ export interface PageConfig {
   icon: string;
   /** Render edge to edge, without the tab rail and the footer. */
   fullBleed?: boolean;
+  /** Keep the route, but leave it out of the tabs and the rotation. */
+  disabled?: boolean;
 }
 
 export const APP_PAGES: PageConfig[] = [
@@ -41,5 +43,6 @@ export const APP_PAGES: PageConfig[] = [
     component: 'Photo',
     icon: 'ImageIcon',
     fullBleed: true,
+    disabled: true,
   },
 ];

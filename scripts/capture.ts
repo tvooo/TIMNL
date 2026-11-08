@@ -13,7 +13,7 @@ const CONFIG = {
 };
 
 // Generate numbered filenames for each page
-const PAGES = APP_PAGES.map((page, index) => ({
+const PAGES = APP_PAGES.filter((page) => !page.disabled).map((page, index) => ({
   url: page.path,
   filename: `dashboard-${String(index + 1).padStart(2, '0')}.png`,
   name: page.name,

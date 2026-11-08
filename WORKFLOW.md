@@ -38,7 +38,9 @@ Pages are React components in `src/pages/`, registered in
 that config, and the server publishes whatever was captured, so adding a
 page there is all that's needed for it to show up in the rotation. Setting
 `fullBleed: true` on a page drops the tab rail and the footer so it gets the
-whole frame (the photo page uses this).
+whole frame (the photo page uses this). `disabled: true` keeps a page's
+route but leaves it out of the tabs and the rotation (the photo page is
+currently disabled).
 
 ## Photos
 
