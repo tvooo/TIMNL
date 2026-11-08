@@ -10,3 +10,8 @@ body {
   background: white;
   color: black;
 }
+
+/* TEMPORARY: font comparison (scripts/capture-variants.ts) */
+html[data-font='atkinson'] body {
+  font-family: 'Atkinson Hyperlegible Next', sans-serif;
+}

@@ -13,9 +13,10 @@
     "fetch-weather": "tsx scripts/fetch-weather.ts",
     "fetch-tasks": "tsx scripts/fetch-tasks.ts",
     "fetch-photo": "tsx scripts/fetch-photo.ts",
-    "capture": "tsx scripts/capture.ts"
+    "capture": "tsx scripts/capture-variants.ts"
   },
   "dependencies": {
+    "@fontsource/atkinson-hyperlegible-next": "^5.3.0",
     "dotenv": "^17.2.3",
     "ical.js": "^2.2.1",
     "lucide-react": "^0.555.0",
