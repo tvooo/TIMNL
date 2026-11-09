@@ -17,12 +17,11 @@ const darken = (v: number) => 255 * (v / 255) ** 1.4;
 const none = (v: number) => v;
 
 // Query flags (see src/main.tsx): ink = small grey text in black, medium
-// weight; stroke = small text thickened by a fraction of a pixel
+// weight; pixel = small text in a bitmap font
 const VARIANTS = [
   { label: 'A current', query: '', tone: none },
-  { label: 'E ink', query: '?ink', tone: none },
-  { label: 'F ink+stroke', query: '?ink&stroke', tone: none },
   { label: 'G ink+curve', query: '?ink', tone: darken },
+  { label: 'H pixel+curve', query: '?ink&pixel', tone: darken },
 ];
 
 function labelSvg(text: string) {

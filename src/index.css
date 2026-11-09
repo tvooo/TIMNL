@@ -23,7 +23,20 @@ html[data-ink] :is(.text-xs, .text-sm, .text-base) :is(.text-gray-400, .text-gra
 html[data-ink] .text-xs {
   font-size: 13px;
 }
-/* stroke: thicken small text by a fraction of a pixel */
-html[data-stroke] :is(.text-xs, .text-sm, .text-base) {
-  -webkit-text-stroke: 0.3px currentColor;
+/* pixel: small text in a bitmap font at its native 16px, so it lands on whole pixels */
+@font-face {
+  font-family: 'Pixel Operator';
+  src: url('/fonts/PixelOperator.ttf') format('truetype');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Pixel Operator';
+  src: url('/fonts/PixelOperator-Bold.ttf') format('truetype');
+  font-weight: 700;
+}
+html[data-pixel] :is(.text-xs, .text-sm, .text-base) {
+  font-family: 'Pixel Operator', sans-serif;
+  font-size: 16px;
+  line-height: 16px;
+  -webkit-font-smoothing: none;
 }
