@@ -12,17 +12,17 @@ const serverUrl = process.env.CAPTURE_URL || 'http://localhost:3000';
 const outputDir = path.join(process.cwd(), 'screenshots');
 const PAGES = ['/', '/week'];
 
-// Darken mid-tones before rounding to the panel's 4 greys, so grey text
-// and anti-aliased edges land on darker levels
-const darken = (v: number) => 255 * (v / 255) ** 2;
-// 1-bit: everything below light grey becomes black
-const threshold = (v: number) => (v < 170 ? 0 : 255);
+// Mildly darken mid-tones before rounding to the panel's 4 greys
+const darken = (v: number) => 255 * (v / 255) ** 1.4;
+const none = (v: number) => v;
 
+// Query flags (see src/main.tsx): ink = small grey text in black, medium
+// weight; stroke = small text thickened by a fraction of a pixel
 const VARIANTS = [
-  { label: 'A current', font: false, hinting: false, tone: (v: number) => v },
-  { label: 'B darker', font: false, hinting: false, tone: darken },
-  { label: 'C font+hint+darker', font: true, hinting: true, tone: darken },
-  { label: 'D font+hint 1-bit', font: true, hinting: true, tone: threshold },
+  { label: 'A current', query: '', tone: none },
+  { label: 'E ink', query: '?ink', tone: none },
+  { label: 'F ink+stroke', query: '?ink&stroke', tone: none },
+  { label: 'G ink+curve', query: '?ink', tone: darken },
 ];
 
 function labelSvg(text: string) {
@@ -42,13 +42,12 @@ async function main() {
     for (const variant of VARIANTS) {
       const browser = await chromium.launch({
         executablePath: process.env.CHROMIUM_PATH || undefined,
-        args: variant.hinting ? ['--font-render-hinting=full'] : [],
       });
       const page = await browser.newPage({
         viewport: { width: DISPLAY.width, height: DISPLAY.height },
         deviceScaleFactor: 1,
       });
-      const url = `${serverUrl}${pagePath}${variant.font ? '?font=atkinson' : ''}`;
+      const url = `${serverUrl}${pagePath}${variant.query}`;
       console.log(`[${variant.label}] ${url}`);
       await page.goto(url, { waitUntil: 'networkidle', timeout: 10000 });
       await page.waitForTimeout(2000);

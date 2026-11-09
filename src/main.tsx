@@ -1,15 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
-import '@fontsource/atkinson-hyperlegible-next/400.css'
-import '@fontsource/atkinson-hyperlegible-next/500.css'
-import '@fontsource/atkinson-hyperlegible-next/600.css'
-import '@fontsource/atkinson-hyperlegible-next/700.css'
 import './index.css'
 
-// TEMPORARY: font comparison (scripts/capture-variants.ts)
-if (new URLSearchParams(location.search).get('font') === 'atkinson') {
-  document.documentElement.dataset.font = 'atkinson'
+// TEMPORARY: small-text variants (scripts/capture-variants.ts)
+const params = new URLSearchParams(location.search)
+for (const flag of ['ink', 'stroke']) {
+  if (params.has(flag)) document.documentElement.dataset[flag] = ''
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

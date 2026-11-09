@@ -11,7 +11,7 @@ import {
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { DISPLAY } from './config/display';
-import { APP_PAGES } from './config/pages';
+import { APP_PAGES, SHOW_TABS } from './config/pages';
 import { Agenda, Energy, Photo, Week } from './pages';
 import type { BatteryData } from './types/battery';
 import { weather, weatherDescription, weatherIcon } from './weather';
@@ -116,7 +116,7 @@ function AppContent() {
           </Routes>
         </div>
 
-        {!fullBleed && (
+        {SHOW_TABS && !fullBleed && (
           <div className="flex-0">
             <Tabs />
           </div>
@@ -124,7 +124,7 @@ function AppContent() {
       </main>
 
       {!fullBleed && (
-        <footer className="mt-auto flex justify-end items-center gap-4 p-2 text-sm text-gray-600">
+        <footer className="mt-auto flex justify-end items-center gap-4 px-4 py-2 text-base text-gray-600">
           {!weather.error && <CurrentWeather />}
           {battery && <Battery {...battery} />}
           <span>Last updated: {new Date().toLocaleString('de-DE')}</span>

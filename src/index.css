@@ -11,7 +11,19 @@ body {
   color: black;
 }
 
-/* TEMPORARY: font comparison (scripts/capture-variants.ts) */
-html[data-font='atkinson'] body {
-  font-family: 'Atkinson Hyperlegible Next', sans-serif;
+/* TEMPORARY: small-text variants (scripts/capture-variants.ts) */
+/* ink: small grey text in black, medium weight, 13px minimum */
+html[data-ink] :is(.text-xs, .text-sm, .text-base):not(.font-medium, .font-semibold, .font-bold) {
+  font-weight: 500;
+}
+html[data-ink] :is(.text-xs, .text-sm, .text-base):is(.text-gray-400, .text-gray-500, .text-gray-600, .text-gray-700),
+html[data-ink] :is(.text-xs, .text-sm, .text-base) :is(.text-gray-400, .text-gray-500, .text-gray-600, .text-gray-700) {
+  color: black;
+}
+html[data-ink] .text-xs {
+  font-size: 13px;
+}
+/* stroke: thicken small text by a fraction of a pixel */
+html[data-stroke] :is(.text-xs, .text-sm, .text-base) {
+  -webkit-text-stroke: 0.3px currentColor;
 }

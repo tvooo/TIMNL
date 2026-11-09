@@ -12,6 +12,9 @@ export interface PageConfig {
   disabled?: boolean;
 }
 
+/** Show the tab rail on the right of each page. */
+export const SHOW_TABS = false;
+
 export const APP_PAGES: PageConfig[] = [
   {
     path: '/',
