@@ -20,7 +20,7 @@ export function Energy() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-8">
           <h2 className="text-xl font-bold mb-2">Error loading energy data</h2>
-          <p className="text-gray-600">{data.error}</p>
+          <p>{data.error}</p>
         </div>
       </div>
     );
@@ -33,7 +33,7 @@ export function Energy() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-8">
           <h2 className="text-xl font-bold mb-2">No energy data</h2>
-          <p className="text-gray-600">Run 'npm run fetch-energy' to fetch data</p>
+          <p>Run 'npm run fetch-energy' to fetch data</p>
         </div>
       </div>
     );
@@ -44,15 +44,15 @@ export function Energy() {
       <h1 className="text-4xl font-bold mb-6">Energy</h1>
       <div className="grid grid-cols-2 gap-6">
         {sensorEntries.map(([entityId, sensor]) => (
-          <div key={entityId} className="border-2 border-gray-300 rounded-lg p-6">
-            <h3 className="text-base font-semibold text-gray-600 mb-2">
+          <div key={entityId} className="border-2 border-gray-400 rounded-lg p-6">
+            <h3 className="text-base font-semibold mb-2">
               {sensor.friendlyName}
             </h3>
             <div className="flex items-baseline gap-2">
               <span className="text-6xl font-bold">{formatState(sensor.state)}</span>
-              <span className="text-3xl text-gray-600">{sensor.unit}</span>
+              <span className="text-3xl">{sensor.unit}</span>
             </div>
-            <div className="text-sm text-gray-400 mt-2">
+            <div className="text-sm mt-2">
               Updated: {new Date(sensor.lastUpdated).toLocaleString()}
             </div>
           </div>

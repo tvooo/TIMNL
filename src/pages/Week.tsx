@@ -8,7 +8,7 @@ export function Week() {
   if (data.error) {
     return (
       <div className="space-y-2 mt-4">
-        <div className="text-sm text-gray-600">Error: {data.error}</div>
+        <div className="text-sm">Error: {data.error}</div>
       </div>
     )
   }
@@ -101,7 +101,7 @@ export function Week() {
             events.map(event => (
               <div key={event.id} className="text-sm">
                 {!event.isAllDay && (
-                  <span className="text-gray-600 text-xs mr-1 tabular-nums">
+                  <span className="text-xs mr-1 tabular-nums">
                     {formatTime(event.startDate)}
                   </span>
                 )}
@@ -124,7 +124,7 @@ export function Week() {
           <div className="columns-2 gap-x-4">
             {nextWeekEvents.map(event => (
               <div key={event.id} className="text-sm font-medium mb-1 break-inside-avoid">
-                <span className="text-gray-600 text-xs mr-1">
+                <span className="text-xs mr-1">
                   {new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'short' })}
                 </span>
                 {event.title}

@@ -10,7 +10,7 @@ export function Photo() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-8">
           <h2 className="text-xl font-bold mb-2">No photo</h2>
-          <p className="text-gray-600">
+          <p>
             {data.error ?? "Copy images into the photos directory and run 'npm run fetch-photo'"}
           </p>
         </div>

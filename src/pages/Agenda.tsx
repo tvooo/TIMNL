@@ -11,10 +11,10 @@ export function Agenda() {
   if (data.error && taskData.error) {
     return (
       <div className="space-y-2 mt-4">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm">
           Calendar Error: {data.error}
         </div>
-        <div className="text-sm text-gray-600">
+        <div className="text-sm">
           Tasks Error: {taskData.error}
         </div>
       </div>
@@ -100,31 +100,31 @@ export function Agenda() {
   const renderEvent = (event: CalendarEvent) => (
     <div
       key={event.id}
-      className="border-b border-gray-300 last:border-0 flex gap-2 pb-1"
+      className="border-b border-gray-400 last:border-0 flex gap-2 pb-1"
     >
       <div className="flex-1">
         <div className="flex flex-row font-semibold gap-2 text-3xl">
           {!event.isAllDay && (
-            <div className="tabular-nums text-gray-700 font-normal">
+            <div className="tabular-nums font-normal">
               {formatTime(event.startDate)}
             </div>
           )}
           <div className="font-semibold">{event.title}</div>
         </div>
         {!event.isAllDay && (
-          <div className="text-gray-700 text-base">
+          <div className="text-base">
             until {formatEnd(event)}
           </div>
         )}
         {event.location && (
-          <div className="text-gray-600 text-sm">{event.location}</div>
+          <div className="text-sm">{event.location}</div>
         )}
       </div>
     </div>
   )
 
   const renderPastEvent = (event: CalendarEvent) => (
-    <div key={event.id} className="flex gap-2 text-gray-500 text-base">
+    <div key={event.id} className="flex gap-2 text-gray-400 text-base">
       <span className="tabular-nums">
         {formatTime(event.startDate)}–{formatEnd(event)}
       </span>
@@ -139,7 +139,7 @@ export function Agenda() {
         const Icon = weatherIcon(hour.weatherCode)
         return (
           <div key={hour.time} className="flex items-center gap-2 tabular-nums">
-            <span className="text-gray-600">{formatHour(hour.time)}</span>
+            <span>{formatHour(hour.time)}</span>
             <Icon className="w-5 h-5" />
             <span className="w-8 text-right font-semibold">{Math.round(hour.temperature)}°</span>
           </div>
@@ -151,7 +151,7 @@ export function Agenda() {
   const renderTask = (task: Task) => (
     <div
       key={task.id}
-      className="border-b border-gray-300 last:border-0 flex gap-2 pb-1"
+      className="border-b border-gray-400 last:border-0 flex gap-2 pb-1"
     >
       <div className="text-3xl">☐</div>
       <div className="flex-1">
@@ -160,7 +160,7 @@ export function Agenda() {
           {task.isOverdue && ' ⚠️'}
         </div>
         {task.notes && (
-          <div className="text-gray-600 mt-1 text-base">{task.notes}</div>
+          <div className="mt-1 text-base">{task.notes}</div>
         )}
       </div>
     </div>
@@ -180,7 +180,7 @@ export function Agenda() {
 
       {/* Always show Today section */}
       <div>
-        <h2 className="font-bold text-gray-900 text-2xl mb-1">Today</h2>
+        <h2 className="font-bold text-2xl mb-1">Today</h2>
         {todayEvents.length > 0 || todayTasks.length > 0 ? (
           <div className="space-y-2">
             {todayEvents.length > 0 && (
@@ -189,14 +189,14 @@ export function Agenda() {
             {todayTasks.length > 0 && (
               <div>
                 {todayEvents.length > 0 && (
-                  <h3 className="font-semibold mb-2 text-gray-700 text-xl mt-2">Tasks</h3>
+                  <h3 className="font-semibold mb-2 text-xl mt-2">Tasks</h3>
                 )}
                 <div className="space-y-2">{todayTasks.map(renderTask)}</div>
               </div>
             )}
           </div>
         ) : (
-          <div className="text-gray-500 font-normal text-4xl">
+          <div className="text-gray-400 font-normal text-4xl">
             {pastTodayEvents.length > 0 ? 'Nothing else today' : 'Nothing scheduled for today'} ☺️
           </div>
         )}
@@ -205,7 +205,7 @@ export function Agenda() {
       {/* Only show Tomorrow if there are events or tasks */}
       {(tomorrowEvents.length > 0 || tomorrowTasks.length > 0) && (
         <div>
-          <h2 className="font-bold text-gray-900 text-2xl mb-1">Tomorrow</h2>
+          <h2 className="font-bold text-2xl mb-1">Tomorrow</h2>
           <div className="space-y-2">
             {tomorrowEvents.length > 0 && (
               <div className="space-y-2">{tomorrowEvents.map(renderEvent)}</div>
@@ -213,7 +213,7 @@ export function Agenda() {
             {tomorrowTasks.length > 0 && (
               <div>
                 {tomorrowEvents.length > 0 && (
-                  <h3 className="font-semibold mb-2 text-gray-700 text-xl mt-2">Tasks</h3>
+                  <h3 className="font-semibold mb-2 text-xl mt-2">Tasks</h3>
                 )}
                 <div className="space-y-2">{tomorrowTasks.map(renderTask)}</div>
               </div>
@@ -225,7 +225,7 @@ export function Agenda() {
 
       {pastTodayEvents.length > 0 && (
         <div className="shrink-0 pt-2 pb-2">
-          <h2 className="font-semibold text-gray-500 text-base">Earlier today</h2>
+          <h2 className="font-semibold text-gray-400 text-base">Earlier today</h2>
           {pastTodayEvents.map(renderPastEvent)}
         </div>
       )}

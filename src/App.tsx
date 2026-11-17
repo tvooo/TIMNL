@@ -57,7 +57,7 @@ function Tabs() {
           key={index}
           to={page.path}
           className={twMerge(
-            "h-14 w-14 flex items-center justify-center bg-gray-200 rounded-l-xl text-gray-700",
+            "h-14 w-14 flex items-center justify-center bg-gray-200 rounded-l-xl",
             location.pathname === page.path && "bg-black text-white"
           )}
         >
@@ -127,7 +127,7 @@ function AppContent() {
       </main>
 
       {!fullBleed && (
-        <footer className="mt-auto flex justify-end items-center gap-4 px-4 py-2 text-base text-gray-600">
+        <footer className="mt-auto flex justify-end items-center gap-4 px-4 py-2 text-base">
           {!weather.error && <CurrentWeather />}
           {battery && <Battery {...battery} />}
           <span>Last updated: {new Date().toLocaleString('de-DE')}</span>
