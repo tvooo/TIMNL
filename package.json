@@ -13,7 +13,7 @@
     "fetch-weather": "tsx scripts/fetch-weather.ts",
     "fetch-tasks": "tsx scripts/fetch-tasks.ts",
     "fetch-photo": "tsx scripts/fetch-photo.ts",
-    "capture": "tsx scripts/capture-variants.ts"
+    "capture": "tsx scripts/capture.ts"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
