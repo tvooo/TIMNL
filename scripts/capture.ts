@@ -43,7 +43,8 @@ async function capturePages(page: Page) {
       .raw()
       .toBuffer({ resolveWithObject: true });
     const target = path.join(outputPath, pageConfig.filename);
-    fs.writeFileSync(target, encodeGrayPng(data, info.width, info.height, DISPLAY.bitDepth));
+    const png = encodeGrayPng(data, info.width, info.height, DISPLAY.bitDepth, DISPLAY.perceivedLevels);
+    fs.writeFileSync(target, png);
 
     console.log(`[${pageConfig.name}] Screenshot saved: ${target}`);
   }

@@ -5,6 +5,11 @@ export const DISPLAY = {
   height: 480,
   /** Grey levels the panel can show. */
   grayLevels: 4,
+  /**
+   * How light each level looks on the panel (0–255). Pixels round to the
+   * nearest of these; dark grey is nearly black.
+   */
+  perceivedLevels: [0, 45, 170, 255],
   /** Depth of the packed greyscale PNGs served to the device. */
   bitDepth: 2,
 } as const;

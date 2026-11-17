@@ -3,15 +3,22 @@ import { crc32, deflateSync } from 'zlib';
 /**
  * Encodes 8-bit greyscale pixels as a 1/2/4-bit greyscale PNG. sharp only
  * writes sub-8-bit depths as palette PNGs; TRMNL firmware expects plain
- * greyscale. Pixels are rounded to the nearest of the 2^bitDepth levels.
+ * greyscale. Pixels are rounded to the nearest of the 2^bitDepth levels,
+ * evenly spaced unless `levels` gives how light each one looks.
  */
 export function encodeGrayPng(
   pixels: Uint8Array,
   width: number,
   height: number,
   bitDepth: 1 | 2 | 4,
+  levels?: readonly number[],
 ): Buffer {
   const maxLevel = (1 << bitDepth) - 1;
+  const targets = levels ?? Array.from({ length: maxLevel + 1 }, (_, i) => (i * 255) / maxLevel);
+  if (targets.length !== maxLevel + 1) throw new Error(`need ${maxLevel + 1} levels`);
+  const nearest = Uint8Array.from({ length: 256 }, (_, v) =>
+    targets.reduce((best, t, i) => (Math.abs(v - t) < Math.abs(v - targets[best]) ? i : best), 0),
+  );
   const perByte = 8 / bitDepth;
   const stride = Math.ceil(width / perByte);
   // Each scanline: filter byte (0 = none) + packed pixels, MSB first
@@ -20,7 +27,7 @@ export function encodeGrayPng(
   for (let y = 0; y < height; y++) {
     const row = y * (stride + 1) + 1;
     for (let x = 0; x < width; x++) {
-      const level = Math.round((pixels[y * width + x] / 255) * maxLevel);
+      const level = nearest[pixels[y * width + x]];
       const shift = 8 - bitDepth * ((x % perByte) + 1);
       raw[row + Math.floor(x / perByte)] |= level << shift;
     }
