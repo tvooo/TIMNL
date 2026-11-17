@@ -6,13 +6,14 @@ import {
   Calendar1Icon,
   CalendarDaysIcon,
   ImageIcon,
+  PaletteIcon,
   ZapIcon,
 } from 'lucide-react';
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { DISPLAY } from './config/display';
 import { APP_PAGES, SHOW_TABS } from './config/pages';
-import { Agenda, Energy, Photo, Week } from './pages';
+import { Agenda, Energy, Photo, Test, Week } from './pages';
 import type { BatteryData } from './types/battery';
 import { weather, weatherDescription, weatherIcon } from './weather';
 
@@ -26,6 +27,7 @@ const iconMap = {
   Calendar1Icon,
   CalendarDaysIcon,
   ImageIcon,
+  PaletteIcon,
   ZapIcon,
 };
 
@@ -35,6 +37,7 @@ const componentMap = {
   Week,
   Energy,
   Photo,
+  Test,
 };
 
 // Combine config with React components

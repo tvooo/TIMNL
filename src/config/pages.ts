@@ -42,4 +42,11 @@ export const APP_PAGES: PageConfig[] = [
     fullBleed: true,
     disabled: true,
   },
+  {
+    path: '/test',
+    name: 'test',
+    component: 'Test',
+    icon: 'PaletteIcon',
+    fullBleed: true,
+  },
 ];
